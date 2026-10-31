@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brightloop · My subscriptions</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<header class="portal-top">
+  <div class="inner">
+    <a class="logo" href="index.html" style="padding:0;color:#0F172A"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#0A1628"></rect><circle cx="14" cy="14" r="6.5" fill="none" stroke="#14C8A0" stroke-width="3"></circle><circle cx="14" cy="7.5" r="2.6" fill="#FFFFFF"></circle></svg>Brightloop</a>
+    <nav aria-label="Portal">
+      <a href="#" aria-current="page">My subscriptions</a>
+      <a href="#">Invoices</a>
+      <a href="#">Payments</a>
+      <a href="#">Profile</a>
+    </nav>
+    <div class="user"><div class="avatar" style="background:#D7F5EC;color:#047857">RM</div><strong>Rahul Menon</strong></div>
+  </div>
+</header>
+
+<main class="portal-main">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <span class="eyebrow">Northwind Retail Pvt Ltd</span>
+    <h1 class="page-title">Welcome back, Rahul</h1>
+  </div>
+
+  <div class="notice" role="status">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="width:40px;height:40px;border-radius:10px;background:#FEF0C7;color:#B45309;display:grid;place-items:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M12 6v6l4 2"></path></svg></span>
+      <div style="display:flex;flex-direction:column">
+        <strong>1 invoice due in 5 days</strong>
+        <span class="muted" style="font-size:14px"><span class="mono">INV-2026-0042</span> · ₹83,898.00 · due 5 Nov 2026</span>
+      </div>
+    </div>
+    <a class="btn btn-secondary" href="#">View invoice</a>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:24px;line-height:32px;font-weight:600">Subscriptions</h2>
+    <div class="sub-grid" id="subs"></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+      <h2 style="font-size:24px;line-height:32px;font-weight:600">Recent invoices</h2>
+      <a href="#" style="font-size:14px;font-weight:500;text-decoration:none">All invoices</a>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <div class="table-wrap">
+        <table class="t" style="min-width:720px;font-size:14px">
+          <thead><tr><th>Invoice</th><th>Date</th><th>Due</th><th class="num">Total</th><th>Status</th><th><span class="sr-only">Download</span></th></tr></thead>
+          <tbody id="invoices"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+const TONE = { Active: 'success', Paused: 'warning', Paid: 'success', Confirmed: 'info' };
+const subs = [
+  { plan: 'Business Suite', id: 'SUB-000123', status: 'Active', amt: '₹83,898', per: 'month', next: 'Next bill on 6 Nov 2026', action: 'Pause' },
+  { plan: 'Analytics Pro', id: 'SUB-000141', status: 'Active', amt: '₹1,41,600', per: 'year', next: 'Renews on 14 Mar 2027', action: 'Renew early' },
+  { plan: 'Website Builder', id: 'SUB-000167', status: 'Paused', amt: '₹4,720', per: 'month', next: 'Paused since 2 Oct 2026', action: 'Resume' }
+];
+const renderSubs = () => document.getElementById('subs').innerHTML = subs.map((s, i) => `
+  <article class="card sub-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:2px"><h3 class="card-title">${s.plan}</h3><span class="mono small muted">${s.id}</span></div>
+      <span class="badge tone-${TONE[s.status]}">${s.status}</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <span class="price">${s.amt}<small> / ${s.per}</small></span>
+      <span class="muted" style="font-size:14px">${s.next}</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:auto">
+      <a class="btn btn-secondary" href="#">View details</a>
+      <button type="button" class="btn btn-ghost" style="color:#1D4ED8" data-i="${i}">${s.action}</button>
+    </div>
+  </article>`).join('');
+renderSubs();
+
+const toast = document.getElementById('toast');
+document.getElementById('subs').addEventListener('click', (e) => {
+  const i = e.target.dataset.i;
+  if (i === undefined) return;
+  const s = subs[i];
+  let msg;
+  if (s.action === 'Pause') { Object.assign(s, { status: 'Paused', action: 'Resume', next: 'Paused today' }); msg = `${s.plan} paused`; }
+  else if (s.action === 'Resume') { Object.assign(s, { status: 'Active', action: 'Pause', next: 'Next bill on 6 Nov 2026' }); msg = `${s.plan} resumed`; }
+  else { msg = `Renewal requested for ${s.plan}. We'll email a quotation.`; }
+  renderSubs();
+  toast.textContent = msg;
+  toast.hidden = false;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => (toast.hidden = true), 5000);
+});
+
+const invoices = [
+  ['INV-2026-0042', '6 Oct 2026', '5 Nov 2026', '₹83,898.00', 'Confirmed'],
+  ['INV-2026-0031', '6 Sep 2026', '21 Sep 2026', '₹83,898.00', 'Paid'],
+  ['INV-2026-0026', '6 Aug 2026', '21 Aug 2026', '₹4,720.00', 'Paid'],
+  ['INV-2026-0019', '14 Mar 2026', '29 Mar 2026', '₹1,41,600.00', 'Paid']
+];
+document.getElementById('invoices').innerHTML = invoices.map(([id, d, due, t, s]) => `
+  <tr><td class="id">${id}</td><td class="muted">${d}</td><td class="muted">${due}</td><td class="num" style="font-weight:500">${t}</td>
+  <td><span class="badge tone-${TONE[s]}">${s}</span></td>
+  <td style="text-align:right"><button type="button" class="btn btn-ghost btn-sm" aria-label="Download ${id} as PDF">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>PDF</button></td></tr>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brightloop · Dashboard</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar" id="sidebar" data-active="Dashboard" data-role="admin"></nav>
+  <div class="main-col">
+    <header class="topbar" id="topbar" data-user="Aditi Rao" data-role="Admin" data-initials="AR"></header>
+    <main class="page">
+      <div class="between">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="eyebrow">October 2026</span>
+          <h1 class="page-title">Overview</h1>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+          <div class="segmented" role="group" aria-label="Date range" id="range">
+            <button type="button" aria-pressed="true">This month</button>
+            <button type="button" aria-pressed="false">Last month</button>
+            <button type="button" aria-pressed="false">Quarter</button>
+            <button type="button" aria-pressed="false">Custom</button>
+          </div>
+          <a class="btn btn-primary" href="invoices.html?run=1">Run billing</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="kpis"></div>
+
+      <div class="row">
+        <section class="card card-pad" style="flex:2 1 560px;min-width:0;display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px">
+            <div>
+              <h2 class="card-title">Revenue</h2>
+              <p class="small muted" style="margin:0">Collected payments vs. amount still outstanding, by month</p>
+            </div>
+            <div class="small muted" style="display:flex;align-items:center;gap:16px">
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#14C8A0"></span>Collected</span>
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#2563EB"></span>Outstanding</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div aria-hidden="true" class="mono small muted" style="display:flex;flex-direction:column;justify-content:space-between;height:220px;width:44px;text-align:right">
+              <span>₹20L</span><span>₹15L</span><span>₹10L</span><span>₹5L</span><span>0</span>
+            </div>
+            <div role="img" aria-label="Collected revenue grew from 14.2 lakh in May to 18.4 lakh in October; outstanding fell from 3.9 lakh to 3.2 lakh." style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+              <div id="bars" style="height:220px;display:flex;align-items:flex-end;justify-content:space-around;border-bottom:1px solid #CBD5E1;background:repeating-linear-gradient(to top,transparent 0,transparent 54px,#EEF2F7 54px,#EEF2F7 55px)"></div>
+              <div id="months" class="small muted" style="display:flex;justify-content:space-around"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card card-pad" style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:20px">
+          <div>
+            <h2 class="card-title">Subscriptions by state</h2>
+            <p class="small muted" style="margin:0">Select a state to open the filtered list</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:24px">
+            <div role="img" aria-label="1,964 subscriptions: 1,284 active, 412 closed, 96 quotations, 73 drafts, 58 paused, 41 confirmed." style="width:150px;height:150px;border-radius:999px;background:conic-gradient(#14C8A0 0 65.4%,#94A3B8 65.4% 86.4%,#2563EB 86.4% 91.3%,#CBD5E1 91.3% 95%,#F59E0B 95% 98%,#93B4F5 98% 100%);display:grid;place-items:center;flex-shrink:0">
+              <div style="width:100px;height:100px;border-radius:999px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span style="font-size:22px;font-weight:700">1,964</span><span class="small muted">total</span>
+              </div>
+            </div>
+            <ul id="states" style="list-style:none;margin:0;padding:0;flex:1;min-width:160px;display:flex;flex-direction:column;gap:2px"></ul>
+          </div>
+        </section>
+      </div>
+
+      <div class="row">
+        <section class="card" style="flex:2 1 560px;min-width:0">
+          <div class="card-head">
+            <div><h2 class="card-title">Overdue invoices</h2><p class="small muted" style="margin:0">Sorted by days overdue</p></div>
+            <a href="invoices.html?tab=Overdue" style="font-size:14px;font-weight:500;text-decoration:none">View all 37</a>
+          </div>
+          <div class="table-wrap">
+            <table class="t" style="min-width:720px">
+              <thead><tr><th>Invoice</th><th>Customer</th><th>Due date</th><th>Overdue</th><th class="num">Amount due</th><th><span class="sr-only">Action</span></th></tr></thead>
+              <tbody id="overdue"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card" style="flex:1 1 320px;min-width:0">
+          <div style="padding:20px 24px 8px">
+            <h2 class="card-title">Renewals in the next 30 days</h2>
+            <p class="small muted" style="margin:0">5 subscriptions renew before 30 Nov</p>
+          </div>
+          <ul id="renewals" style="list-style:none;margin:0;padding:0 8px 12px"></ul>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="assets/shell.js"></script>
+<script>
+const kpis = [
+  ['Active subscriptions', '1,284', '▲ 4.2%', 'vs last month', false],
+  ['Revenue collected', '₹18.4L', '▲ 6.8%', 'vs last month', false],
+  ['Outstanding', '₹3.2L', '▼ 2.1%', 'across 286 invoices', false],
+  ['Overdue invoices', '37', '₹4.86L', 'past due date', true]
+];
+document.getElementById('kpis').innerHTML = kpis.map(([l, v, d, c, bad]) =>
+  `<a class="card kpi" href="${bad ? 'invoices.html?tab=Overdue' : '#'}"><span class="eyebrow">${l}</span>
+   <span class="value" style="color:${bad ? '#B91C1C' : '#0F172A'}">${v}</span>
+   <span class="small muted"><strong style="color:${bad ? '#B91C1C' : '#047857'}">${d}</strong> ${c}</span></a>`).join('');
+
+const rev = [['May', 14.2, 3.9], ['Jun', 15.1, 3.6], ['Jul', 15.8, 3.8], ['Aug', 16.4, 3.4], ['Sep', 17.3, 3.2], ['Oct', 18.4, 3.2]];
+const h = (v) => Math.round((v / 20) * 220);
+document.getElementById('bars').innerHTML = rev.map(([m, c, o]) =>
+  `<div style="display:flex;align-items:flex-end;gap:6px" title="${m}: ₹${c}L collected, ₹${o}L outstanding">
+     <div style="width:22px;height:${h(c)}px;background:#14C8A0;border-radius:4px 4px 0 0"></div>
+     <div style="width:22px;height:${h(o)}px;background:#2563EB;border-radius:4px 4px 0 0"></div></div>`).join('');
+document.getElementById('months').innerHTML = rev.map(([m]) => `<span style="width:50px;text-align:center">${m}</span>`).join('');
+
+const states = [['Active', '1,284', '#14C8A0'], ['Closed', '412', '#94A3B8'], ['Quotation', '96', '#2563EB'], ['Draft', '73', '#CBD5E1'], ['Paused', '58', '#F59E0B'], ['Confirmed', '41', '#93B4F5']];
+document.getElementById('states').innerHTML = states.map(([n, v, c]) =>
+  `<li><button type="button" class="btn-ghost" style="width:100%;height:32px;display:flex;align-items:center;gap:10px;padding:0 8px;border:none;border-radius:6px;font-size:13px;color:#0F172A;cursor:pointer">
+     <span style="width:10px;height:10px;border-radius:3px;background:${c}"></span><span style="flex:1;text-align:left">${n}</span><span class="mono muted">${v}</span></button></li>`).join('');
+
+const overdue = [
+  ['INV-2026-0018', 'Kestrel Foods', '2 Oct 2026', 29, '₹42,480.00'],
+  ['INV-2026-0021', 'Arcadia Clinics', '9 Oct 2026', 22, '₹18,880.00'],
+  ['INV-2026-0024', 'Bluefin Logistics', '14 Oct 2026', 17, '₹11,800.00'],
+  ['INV-2026-0027', 'Meridian Schools', '20 Oct 2026', 11, '₹23,600.00'],
+  ['INV-2026-0029', 'Orchard Retail', '25 Oct 2026', 6, '₹5,640.00']
+];
+document.getElementById('overdue').innerHTML = overdue.map(([id, c, d, n, a]) =>
+  `<tr><td class="id">${id}</td><td>${c}</td><td class="muted">${d}</td><td style="color:#B91C1C;font-weight:600">${n} days</td>
+   <td class="num" style="font-weight:500">${a}</td><td style="text-align:right"><button type="button" class="btn btn-secondary btn-sm">Record payment</button></td></tr>`).join('');
+
+const renewals = [
+  ['Northwind Retail', 'Business Suite · Yearly', '6 Nov 2026', '₹9,40,800'],
+  ['Lumen Studio', 'Starter · Monthly', '8 Nov 2026', '₹4,720'],
+  ['Harbor Legal', 'Business Suite · Monthly', '12 Nov 2026', '₹23,600'],
+  ['Pinecrest Hotels', 'Analytics Pro · Yearly', '19 Nov 2026', '₹1,41,600'],
+  ['Cobalt Fitness', 'Starter · Monthly', '27 Nov 2026', '₹4,720']
+];
+document.getElementById('renewals').innerHTML = renewals.map(([c, p, d, a]) =>
+  `<li style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F5F9">
+     <div style="display:flex;flex-direction:column"><strong style="font-size:14px">${c}</strong><span class="small muted">${p}</span></div>
+     <div style="display:flex;flex-direction:column;align-items:flex-end"><span class="mono small" style="font-weight:500">${a}</span><span class="muted" style="font-size:12px">${d}</span></div></li>`).join('');
+
+document.getElementById('range').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'BUTTON') return;
+  e.currentTarget.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === e.target));
+});
+</script>
+</body>
+</html>

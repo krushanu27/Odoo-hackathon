@@ -33,7 +33,21 @@ Built on native Odoo Invoicing (invoices, taxes, payments) and Portal.
         "views/subscription_template_views.xml",
         "views/subscription_discount_views.xml",
         "data/demo_actions.xml",
+        # UI: load after menus.xml, they add items under the app and Configuration
+        "views/dashboard_views.xml",
+        "views/billing_views.xml",
+        "views/portal_templates.xml",
+        "views/auth_templates.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "brightloop_subscription/static/src/dashboard/*",
+        ],
+        "web.assets_frontend": [
+            "brightloop_subscription/static/src/scss/portal.scss",
+            "brightloop_subscription/static/src/signup/password_rules.js",
+        ],
+    },
     "post_init_hook": "post_init_hook",
     "application": True,
     "installable": True,

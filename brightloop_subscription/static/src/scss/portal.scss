@@ -1,0 +1,83 @@
+// Customer portal and signup styling. Tokens follow DESIGN.md.
+$bl-primary: #2563EB;
+$bl-muted: #475569;
+$bl-border: #E2E8F0;
+$bl-success: #047857;
+
+.bl_portal {
+    .bl_portal_card {
+        border: 1px solid $bl-border;
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+        transition: box-shadow 150ms;
+
+        &:hover,
+        &:focus-visible {
+            box-shadow: 0 4px 12px rgba(15, 23, 42, .1);
+        }
+    }
+    .card {
+        border-radius: 14px;
+        border-color: $bl-border;
+    }
+    .bl_portal_price {
+        font-size: 1.75rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: -.02em;
+        font-variant-numeric: tabular-nums;
+    }
+    .bl_portal_label {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: $bl-muted;
+        margin-bottom: 4px;
+    }
+    .bl_portal_badge {
+        font-weight: 500;
+    }
+}
+
+.bl_password_rules {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 12px;
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    background: #F8FAFC;
+    border: 1px solid $bl-border;
+    border-radius: 10px;
+    font-size: 13px;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: $bl-muted;
+
+        &::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #CBD5E1;
+            flex-shrink: 0;
+        }
+
+        &.bl_ok {
+            color: $bl-success;
+
+            &::before {
+                border-color: $bl-success;
+                background: $bl-success;
+                box-shadow: inset 0 0 0 2px #fff;
+            }
+        }
+    }
+
+    @media (max-width: 400px) {
+        grid-template-columns: 1fr;
+    }
+}

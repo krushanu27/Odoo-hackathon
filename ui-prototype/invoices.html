@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brightloop · Invoices</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar" id="sidebar" data-active="Invoices" data-role="admin"></nav>
+  <div class="main-col">
+    <header class="topbar" id="topbar" data-user="Aditi Rao" data-role="Admin" data-initials="AR"></header>
+    <main class="page" style="gap:20px">
+      <div class="between">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="eyebrow">Billing</span>
+          <h1 class="page-title">Invoices</h1>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="btn btn-secondary">Export</button>
+          <button type="button" class="btn btn-primary" id="runBtn">Run billing</button>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Invoice status" id="tabs"></div>
+
+      <div class="filters">
+        <label class="search outlined"><span class="sr-only">Search invoices</span><input type="search" id="q" placeholder="Invoice number or customer"></label>
+        <button type="button" class="chip">Customer ▾</button>
+        <button type="button" class="chip">Plan ▾</button>
+        <button type="button" class="chip on" aria-label="Remove filter: Invoice date October 2026">Invoice date: Oct 2026 ✕</button>
+        <button type="button" class="btn btn-ghost btn-sm">Clear all</button>
+      </div>
+
+      <section class="card" style="overflow:hidden">
+        <div class="bulkbar" id="bulk" hidden>
+          <strong id="selCount"></strong>
+          <span aria-hidden="true" style="width:1px;height:20px;background:#BFD3FB"></span>
+          <button type="button" class="btn btn-secondary btn-sm" data-bulk="Confirmed">Confirm</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-bulk="send">Send</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-bulk="print">Print</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="deselect" style="margin-left:auto">Deselect</button>
+        </div>
+        <div class="table-wrap">
+          <table class="t" style="min-width:960px">
+            <thead><tr>
+              <th style="width:16px"><input type="checkbox" id="all" aria-label="Select all visible invoices"></th>
+              <th>Invoice</th><th>Customer</th><th>Subscription</th><th>Invoice date</th><th>Due date</th><th class="num">Total</th><th class="num">Amount due</th><th>Status</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>Showing 1–25 of <span class="mono" id="totalLabel"></span></span>
+          <div class="pages">
+            <button type="button" class="edge" aria-label="Previous page">‹</button>
+            <button type="button" class="current" aria-current="page">1</button>
+            <button type="button">2</button><button type="button">3</button><span>…</span><button type="button">140</button>
+            <button type="button" class="edge" aria-label="Next page">›</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="runTitle">
+    <div style="padding:24px 24px 0;display:flex;flex-direction:column;gap:6px">
+      <h2 id="runTitle">Run billing</h2>
+      <p class="muted small" style="margin:0;font-size:14px">Billing date: 31 Oct 2026. Review what will happen before invoices are created.</p>
+    </div>
+    <dl>
+      <div><dt>Subscriptions due today</dt><dd>142</dd></div>
+      <div><dt style="display:flex;flex-direction:column"><span>Already invoiced for this period</span><span class="muted" style="font-size:12px">Skipped, so nothing is billed twice</span></dt><dd class="muted">0</dd></div>
+      <div><dt style="display:flex;flex-direction:column"><span>Paused or closed</span><span class="muted" style="font-size:12px">Excluded until resumed</span></dt><dd class="muted">12</dd></div>
+      <div><dt style="display:flex;flex-direction:column"><span>Discounts applied automatically</span><span class="muted" style="font-size:12px">From 4 active discount rules</span></dt><dd style="color:#047857">31</dd></div>
+    </dl>
+    <div style="display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:24px">
+      <button type="button" class="btn btn-ghost" id="cancelRun">Cancel</button>
+      <button type="button" class="btn btn-primary" id="generate">Generate 142 draft invoices</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden><span id="toastText"></span><button type="button" id="toastAction">View drafts</button></div>
+
+<script src="assets/shell.js"></script>
+<script>
+const TONE = { Draft: 'neutral', Confirmed: 'info', Paid: 'success', Overdue: 'danger', Cancelled: 'danger' };
+const COUNTS = { All: '3,482', Draft: '142', Confirmed: '286', Paid: '3,017', Overdue: '37' };
+const invoices = [
+  ['INV-2026-0142', 'Northwind Retail', 'SUB-000123', '31 Oct 2026', '15 Nov 2026', '₹83,898.00', '₹83,898.00', 'Draft', ''],
+  ['INV-2026-0141', 'Lumen Studio', 'SUB-000188', '31 Oct 2026', '15 Nov 2026', '₹4,720.00', '₹4,720.00', 'Draft', ''],
+  ['INV-2026-0139', 'Harbor Legal', 'SUB-000097', '30 Oct 2026', '14 Nov 2026', '₹23,600.00', '₹23,600.00', 'Confirmed', 'Sent 30 Oct'],
+  ['INV-2026-0136', 'Pinecrest Hotels', 'SUB-000064', '28 Oct 2026', '12 Nov 2026', '₹1,41,600.00', '₹0.00', 'Paid', 'Bank transfer'],
+  ['INV-2026-0131', 'Cobalt Fitness', 'SUB-000210', '27 Oct 2026', '11 Nov 2026', '₹4,720.00', '₹2,720.00', 'Confirmed', 'Partially paid'],
+  ['INV-2026-0120', 'Arcadia Clinics', 'SUB-000132', '20 Oct 2026', '4 Nov 2026', '₹18,880.00', '₹0.00', 'Cancelled', 'Replaced by 0121'],
+  ['INV-2026-0029', 'Orchard Retail', 'SUB-000155', '10 Oct 2026', '25 Oct 2026', '₹5,640.00', '₹5,640.00', 'Overdue', '6 days overdue'],
+  ['INV-2026-0024', 'Bluefin Logistics', 'SUB-000071', '29 Sep 2026', '14 Oct 2026', '₹11,800.00', '₹11,800.00', 'Overdue', '17 days overdue'],
+  ['INV-2026-0018', 'Kestrel Foods', 'SUB-000045', '17 Sep 2026', '2 Oct 2026', '₹42,480.00', '₹42,480.00', 'Overdue', '29 days overdue']
+].map(([id, cust, sub, date, due, total, amtDue, status, note]) => ({ id, cust, sub, date, due, total, amtDue, status, note }));
+
+const params = new URLSearchParams(location.search);
+const state = { tab: COUNTS[params.get('tab')] ? params.get('tab') : 'All', q: '', sel: new Set(['INV-2026-0142', 'INV-2026-0141']) };
+
+const visible = () => invoices.filter((r) =>
+  (state.tab === 'All' || r.status === state.tab) &&
+  (!state.q || (r.id + ' ' + r.cust).toLowerCase().includes(state.q)));
+
+function render() {
+  document.getElementById('tabs').innerHTML = Object.keys(COUNTS).map((t) =>
+    `<button type="button" role="tab" class="tab${t === state.tab ? ' active' : ''}" aria-selected="${t === state.tab}" data-tab="${t}">${t}<span class="count">${COUNTS[t]}</span></button>`).join('');
+  const rows = visible();
+  document.getElementById('rows').innerHTML = rows.length ? rows.map((r) => {
+    const sel = state.sel.has(r.id);
+    return `<tr class="${sel ? 'selected' : ''}">
+      <td><input type="checkbox" data-id="${r.id}" aria-label="Select ${r.id}"${sel ? ' checked' : ''}></td>
+      <td class="id">${r.id}</td><td style="font-weight:500">${r.cust}</td><td class="mono muted">${r.sub}</td>
+      <td class="muted">${r.date}</td><td style="color:${r.status === 'Overdue' ? '#B91C1C' : '#475569'}">${r.due}</td>
+      <td class="num">${r.total}</td><td class="num" style="font-weight:600">${r.amtDue}</td>
+      <td><div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px"><span class="badge tone-${TONE[r.status]}">${r.status}</span><span class="muted" style="font-size:12px">${r.note}</span></div></td></tr>`;
+  }).join('') : `<tr><td colspan="9" style="height:160px;text-align:center" class="muted">No invoices match these filters.</td></tr>`;
+  const all = document.getElementById('all');
+  all.checked = rows.length > 0 && rows.every((r) => state.sel.has(r.id));
+  document.getElementById('bulk').hidden = state.sel.size === 0;
+  document.getElementById('selCount').textContent = `${state.sel.size} selected`;
+  document.getElementById('totalLabel').textContent = COUNTS[state.tab];
+}
+
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-tab]');
+  if (b) { state.tab = b.dataset.tab; render(); }
+});
+document.getElementById('rows').addEventListener('change', (e) => {
+  const id = e.target.dataset.id;
+  if (!id) return;
+  e.target.checked ? state.sel.add(id) : state.sel.delete(id);
+  render();
+});
+document.getElementById('all').addEventListener('change', (e) => {
+  visible().forEach((r) => (e.target.checked ? state.sel.add(r.id) : state.sel.delete(r.id)));
+  render();
+});
+document.getElementById('deselect').addEventListener('click', () => { state.sel.clear(); render(); });
+let qTimer;
+document.getElementById('q').addEventListener('input', (e) => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => { state.q = e.target.value.trim().toLowerCase(); render(); }, 300);
+});
+
+const toast = document.getElementById('toast');
+function showToast(text, withAction) {
+  document.getElementById('toastText').textContent = text;
+  document.getElementById('toastAction').hidden = !withAction;
+  toast.hidden = false;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => (toast.hidden = true), 5000);
+}
+document.getElementById('bulk').addEventListener('click', (e) => {
+  const act = e.target.dataset.bulk;
+  if (!act) return;
+  const n = state.sel.size;
+  if (act === 'Confirmed') {
+    invoices.forEach((r) => { if (state.sel.has(r.id) && r.status === 'Draft') { r.status = 'Confirmed'; r.note = 'Confirmed just now'; } });
+    showToast(`${n} invoice${n > 1 ? 's' : ''} confirmed`);
+  } else {
+    showToast(act === 'send' ? `${n} invoice${n > 1 ? 's' : ''} sent to customers` : `Preparing ${n} PDF${n > 1 ? 's' : ''} to print`);
+  }
+  state.sel.clear();
+  render();
+});
+
+const modal = document.getElementById('modal');
+const runBtn = document.getElementById('runBtn');
+const openModal = () => { modal.hidden = false; document.getElementById('generate').focus(); };
+const closeModal = () => { modal.hidden = true; runBtn.focus(); };
+runBtn.addEventListener('click', openModal);
+document.getElementById('cancelRun').addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+document.getElementById('generate').addEventListener('click', () => {
+  closeModal();
+  showToast('142 draft invoices created', true);
+});
+document.getElementById('toastAction').addEventListener('click', () => { state.tab = 'Draft'; toast.hidden = true; render(); });
+
+render();
+if (params.get('run')) openModal();
+</script>
+</body>
+</html>

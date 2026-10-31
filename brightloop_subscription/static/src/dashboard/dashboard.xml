@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="brightloop_subscription.Dashboard">
+        <div class="o_action bl_dashboard h-100 overflow-auto">
+            <div class="bl_page">
+                <div class="bl_header">
+                    <div>
+                        <div class="bl_eyebrow">Finance overview</div>
+                        <h1 class="bl_title">Dashboard</h1>
+                    </div>
+                    <div class="bl_controls">
+                        <div class="bl_segmented" role="group" aria-label="Date range">
+                            <t t-foreach="ranges" t-as="r" t-key="r.key">
+                                <button type="button" t-att-aria-pressed="state.range === r.key ? 'true' : 'false'"
+                                        t-on-click="() => this.setRange(r.key)" t-esc="r.label"/>
+                            </t>
+                        </div>
+                        <label class="visually-hidden" for="bl_plan_filter">Plan</label>
+                        <select id="bl_plan_filter" class="form-select bl_select" t-on-change="onPlanChange">
+                            <option value="" t-att-selected="!state.planId">All plans</option>
+                            <t t-foreach="state.plans" t-as="plan" t-key="plan.id">
+                                <option t-att-value="plan.id" t-att-selected="state.planId == plan.id" t-esc="plan.name"/>
+                            </t>
+                        </select>
+                        <button type="button" class="btn btn-primary" t-on-click="() => this.openInvoices('filter_draft')">
+                            Review draft invoices
+                        </button>
+                    </div>
+                </div>
+
+                <div t-if="state.error" class="alert alert-danger" role="alert">
+                    <t t-esc="state.error"/>
+                    <button type="button" class="btn btn-link p-0 ms-2 align-baseline" t-on-click="() => this.load()">Retry</button>
+                </div>
+
+                <t t-if="state.data">
+                    <div t-att-class="'bl_body' + (state.loading ? ' bl_stale' : '')">
+                        <!-- KPI tiles -->
+                        <div class="bl_kpis">
+                            <button type="button" class="bl_card bl_kpi" t-on-click="() => this.openSubscriptions('filter_active')">
+                                <span class="bl_eyebrow">Active subscriptions</span>
+                                <span class="bl_kpi_value" t-esc="count(state.data.subscriptions.active)"/>
+                                <span class="bl_kpi_note">
+                                    MRR <strong t-esc="money(state.data.subscriptions.mrr)"/>
+                                </span>
+                            </button>
+                            <button type="button" class="bl_card bl_kpi" t-on-click="() => this.openPayments()">
+                                <span class="bl_eyebrow">Revenue collected</span>
+                                <span class="bl_kpi_value" t-esc="compactMoney(state.data.revenue.collected)"/>
+                                <span class="bl_kpi_note">
+                                    of <t t-esc="money(state.data.revenue.invoiced)"/> invoiced
+                                </span>
+                            </button>
+                            <button type="button" class="bl_card bl_kpi" t-on-click="() => this.openInvoices('filter_outstanding')">
+                                <span class="bl_eyebrow">Outstanding</span>
+                                <span class="bl_kpi_value" t-esc="compactMoney(state.data.revenue.outstanding)"/>
+                                <span class="bl_kpi_note">
+                                    across <t t-esc="count(state.data.invoices.outstanding)"/> invoices
+                                </span>
+                            </button>
+                            <button type="button" class="bl_card bl_kpi" t-on-click="() => this.openInvoices('filter_overdue')">
+                                <span class="bl_eyebrow">Overdue invoices</span>
+                                <span t-att-class="'bl_kpi_value' + (state.data.invoices.overdue ? ' bl_danger' : '')"
+                                      t-esc="count(state.data.invoices.overdue)"/>
+                                <span class="bl_kpi_note">
+                                    <strong t-att-class="state.data.invoices.overdue ? 'bl_danger' : ''"
+                                            t-esc="money(state.data.revenue.overdue)"/> past due
+                                </span>
+                            </button>
+                        </div>
+
+                        <div class="bl_row">
+                            <!-- Revenue trend -->
+                            <section class="bl_card bl_pad bl_grow2">
+                                <div class="bl_card_head">
+                                    <div>
+                                        <h2 class="bl_card_title">Revenue, last 6 months</h2>
+                                        <p class="bl_muted">Collected vs. still outstanding, by invoice month</p>
+                                    </div>
+                                    <div class="bl_legend">
+                                        <span><i style="background:#14C8A0"/>Collected</span>
+                                        <span><i style="background:#2563EB"/>Outstanding</span>
+                                    </div>
+                                </div>
+                                <div class="bl_chart" role="img" t-att-aria-label="trendSummary">
+                                    <t t-foreach="trendBars" t-as="bar" t-key="bar.month">
+                                        <div class="bl_bar_group" t-att-title="bar.title">
+                                            <div class="bl_bars">
+                                                <div class="bl_bar bl_bar_collected" t-att-style="'height:' + bar.collectedHeight + 'px'"/>
+                                                <div class="bl_bar bl_bar_outstanding" t-att-style="'height:' + bar.outstandingHeight + 'px'"/>
+                                            </div>
+                                            <span class="bl_bar_label" t-esc="bar.month"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </section>
+
+                            <!-- Subscriptions by state -->
+                            <section class="bl_card bl_pad bl_grow1">
+                                <h2 class="bl_card_title">Subscriptions by state</h2>
+                                <p class="bl_muted">Select a state to open the list</p>
+                                <div class="bl_donut_row">
+                                    <div class="bl_donut" t-att-style="donutStyle" role="img"
+                                         t-att-aria-label="count(state.data.subscriptions.total) + ' subscriptions'">
+                                        <div class="bl_donut_hole">
+                                            <strong t-esc="count(state.data.subscriptions.total)"/>
+                                            <span>total</span>
+                                        </div>
+                                    </div>
+                                    <ul class="bl_state_list">
+                                        <t t-foreach="stateRows" t-as="row" t-key="row.key">
+                                            <li>
+                                                <button type="button" t-on-click="() => this.openSubscriptions(row.filter)">
+                                                    <i t-att-style="'background:' + row.color"/>
+                                                    <span class="flex-grow-1 text-start" t-esc="row.label"/>
+                                                    <span class="bl_mono" t-esc="count(row.value)"/>
+                                                </button>
+                                            </li>
+                                        </t>
+                                    </ul>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div class="bl_row">
+                            <!-- Overdue invoices -->
+                            <section class="bl_card bl_grow2">
+                                <div class="bl_card_head bl_pad_head">
+                                    <div>
+                                        <h2 class="bl_card_title">Overdue invoices</h2>
+                                        <p class="bl_muted">Oldest first, so they can be chased</p>
+                                    </div>
+                                    <button type="button" class="btn btn-link" t-on-click="() => this.openInvoices('filter_overdue')">
+                                        View all <t t-esc="count(state.data.invoices.overdue)"/>
+                                    </button>
+                                </div>
+                                <div t-if="!state.data.invoices.overdue_list.length" class="bl_empty">
+                                    Nothing overdue. Every confirmed invoice is paid or not yet due.
+                                </div>
+                                <div t-else="" class="table-responsive">
+                                    <table class="table bl_table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Invoice</th>
+                                                <th>Customer</th>
+                                                <th>Due date</th>
+                                                <th>Overdue</th>
+                                                <th class="text-end">Amount due</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.invoices.overdue_list" t-as="inv" t-key="inv.id">
+                                                <tr class="bl_clickable" t-on-click="() => this.openInvoice(inv.id)">
+                                                    <td class="bl_mono bl_link" t-esc="inv.number"/>
+                                                    <td t-esc="inv.customer"/>
+                                                    <td class="bl_muted" t-esc="formatDate(inv.due_date)"/>
+                                                    <td class="bl_danger fw-semibold"><t t-esc="inv.days_overdue"/> days</td>
+                                                    <td class="text-end bl_mono fw-semibold" t-esc="money(inv.amount_due)"/>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <div class="bl_grow1 bl_stack">
+                                <!-- Invoice status -->
+                                <section class="bl_card bl_pad">
+                                    <h2 class="bl_card_title">Invoices</h2>
+                                    <div class="bl_stat_grid">
+                                        <button type="button" t-on-click="() => this.openInvoices('filter_draft')">
+                                            <span class="bl_mono" t-esc="count(state.data.invoices.draft)"/>Draft
+                                        </button>
+                                        <button type="button" t-on-click="() => this.openInvoices('filter_posted')">
+                                            <span class="bl_mono" t-esc="count(state.data.invoices.posted)"/>Confirmed
+                                        </button>
+                                        <button type="button" t-on-click="() => this.openInvoices('filter_paid')">
+                                            <span class="bl_mono bl_success" t-esc="count(state.data.invoices.paid)"/>Paid
+                                        </button>
+                                        <button type="button" t-on-click="() => this.openInvoices('filter_outstanding')">
+                                            <span class="bl_mono bl_warning" t-esc="count(state.data.invoices.outstanding)"/>Outstanding
+                                        </button>
+                                    </div>
+                                </section>
+
+                                <!-- Payments by method -->
+                                <section class="bl_card bl_pad">
+                                    <div class="bl_card_head">
+                                        <h2 class="bl_card_title">Payments by method</h2>
+                                        <span class="bl_mono bl_muted" t-esc="money(state.data.payments.total)"/>
+                                    </div>
+                                    <div t-if="!state.data.payments.by_method.length" class="bl_muted">No payments in this period.</div>
+                                    <ul t-else="" class="bl_bar_list">
+                                        <t t-foreach="state.data.payments.by_method" t-as="pm" t-key="pm.method">
+                                            <li>
+                                                <div class="d-flex justify-content-between">
+                                                    <span><t t-esc="pm.method"/> <span class="bl_muted">· <t t-esc="pm.count"/></span></span>
+                                                    <span class="bl_mono" t-esc="money(pm.amount)"/>
+                                                </div>
+                                                <div class="bl_meter"><div t-att-style="'width:' + (pm.amount / maxMethodAmount * 100) + '%'"/></div>
+                                            </li>
+                                        </t>
+                                    </ul>
+                                </section>
+
+                                <!-- Top plans -->
+                                <section class="bl_card bl_pad">
+                                    <h2 class="bl_card_title">Top plans</h2>
+                                    <div t-if="!state.data.subscriptions.top_plans.length" class="bl_muted">No active subscriptions yet.</div>
+                                    <ol t-else="" class="bl_top_plans">
+                                        <t t-foreach="state.data.subscriptions.top_plans" t-as="tp" t-key="tp.plan_id">
+                                            <li>
+                                                <span t-esc="tp.plan"/>
+                                                <span class="bl_mono bl_muted"><t t-esc="count(tp.active)"/> active</span>
+                                            </li>
+                                        </t>
+                                    </ol>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <div t-elif="state.loading" class="bl_kpis" aria-busy="true">
+                    <t t-foreach="[1, 2, 3, 4]" t-as="i" t-key="i">
+                        <div class="bl_card bl_kpi bl_skeleton"/>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

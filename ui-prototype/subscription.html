@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brightloop · SUB-000123</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar" id="sidebar" data-active="Subscriptions" data-role="staff"></nav>
+  <div class="main-col">
+    <header class="topbar" id="topbar" data-user="Priya Sharma" data-role="Staff" data-initials="PS"
+      data-crumb='<a href="#" style="color:#475569;text-decoration:none">Subscriptions</a><span aria-hidden="true" style="color:#475569">/</span><span class="mono" style="font-weight:500">SUB-000123</span>'></header>
+    <main class="page">
+      <div class="between" style="align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <h1 class="page-title mono" style="letter-spacing:-.02em">SUB-000123</h1>
+            <span class="badge tone-success" id="status">Active</span>
+          </div>
+          <p class="muted" style="margin:0">Northwind Retail Pvt Ltd · Business Suite, billed monthly</p>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px" id="actions">
+          <button type="button" class="btn btn-secondary" data-act="pause">Pause</button>
+          <button type="button" class="btn btn-secondary">Renew</button>
+          <button type="button" class="btn btn-secondary">Close</button>
+          <a class="btn btn-primary" href="invoices.html">Create invoice</a>
+        </div>
+      </div>
+
+      <ol class="stepper card" aria-label="Lifecycle" id="stepper"></ol>
+
+      <div class="row" style="align-items:flex-start">
+        <div style="flex:2 1 600px;min-width:0" class="stack">
+          <dl class="card card-pad facts" style="margin:0" id="facts"></dl>
+
+          <section class="card" style="overflow:hidden">
+            <div class="tabs" role="tablist" aria-label="Subscription sections" style="padding:0 24px">
+              <button type="button" role="tab" class="tab active" aria-selected="true">Lines</button>
+              <button type="button" role="tab" class="tab" aria-selected="false">Invoices <span class="count">1</span></button>
+              <button type="button" role="tab" class="tab" aria-selected="false">Payments <span class="count">0</span></button>
+              <button type="button" role="tab" class="tab" aria-selected="false">Activity</button>
+            </div>
+            <div class="table-wrap">
+              <table class="t" style="min-width:760px">
+                <thead><tr><th>Product</th><th>Variant</th><th class="num">Qty</th><th class="num">Unit price</th><th>Taxes</th><th class="num">Amount</th></tr></thead>
+                <tbody id="lines"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:flex-end;padding:20px 24px 24px">
+              <dl class="totals">
+                <div><dt class="muted">Untaxed amount</dt><dd>₹79,000.00</dd></div>
+                <div><dt style="display:flex;flex-direction:column"><span class="muted">Discount</span><span class="muted" style="font-size:12px">Volume 10% · 25+ seats</span></dt><dd style="color:#047857">− ₹7,900.00</dd></div>
+                <div><dt class="muted">GST 18%</dt><dd>₹12,798.00</dd></div>
+                <div class="grand"><dt>Total per month</dt><dd>₹83,898.00</dd></div>
+              </dl>
+            </div>
+          </section>
+        </div>
+
+        <div style="flex:1 1 300px;min-width:0" class="stack">
+          <section class="card card-pad" style="display:flex;flex-direction:column;gap:14px">
+            <h2 class="card-title">Plan options</h2>
+            <div id="options" style="display:flex;flex-direction:column;gap:14px"></div>
+            <p class="muted" style="margin:0;font-size:12px">Set by the admin on the Business Suite plan.</p>
+          </section>
+          <section class="card card-pad" style="display:flex;flex-direction:column;gap:16px">
+            <h2 class="card-title">Activity</h2>
+            <ol class="timeline" id="activity"></ol>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="assets/shell.js"></script>
+<script>
+const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>';
+const steps = [['Draft', '1 Oct 2026', 'done'], ['Quotation', '3 Oct 2026', 'done'], ['Confirmed', '5 Oct 2026', 'done'], ['Active', 'Since 6 Oct 2026', 'current'], ['Closed', 'Expires 5 Oct 2027', 'todo']];
+document.getElementById('stepper').innerHTML = steps.map(([n, d, s]) =>
+  `<li class="step ${s}"${s === 'current' ? ' aria-current="step"' : ''}><div class="track"><span class="dot">${s === 'done' ? CHECK : ''}</span><span class="line"></span></div>
+   <div style="display:flex;flex-direction:column"><span class="name">${n}</span><span class="muted" style="font-size:12px">${d}</span></div></li>`).join('');
+
+const facts = [['Customer', 'Northwind Retail Pvt Ltd'], ['Plan', 'Business Suite · Monthly'], ['Start date', '6 Oct 2026'], ['Expiry date', '5 Oct 2027'], ['Payment terms', 'Net 15 days'], ['Next invoice', '6 Nov 2026'], ['From template', 'Enterprise starter'], ['Sales rep', 'Priya Sharma']];
+document.getElementById('facts').innerHTML = facts.map(([k, v]) => `<div><dt class="eyebrow">${k}</dt><dd>${v}</dd></div>`).join('');
+
+const lines = [['Brightloop CRM', 'Brand: Odoo (+ ₹560)', 25, '₹2,560.00', '₹64,000.00'], ['Analytics add-on', '—', 25, '₹400.00', '₹10,000.00'], ['Priority support', '—', 1, '₹5,000.00', '₹5,000.00']];
+document.getElementById('lines').innerHTML = lines.map(([p, v, q, u, a]) =>
+  `<tr><td style="font-weight:500">${p}</td><td class="muted">${v}</td><td class="num">${q}</td><td class="num">${u}</td><td><span class="tag">GST 18%</span></td><td class="num" style="font-weight:500">${a}</td></tr>`).join('');
+
+const options = [['Auto-close at end date', false], ['Can be closed early', true], ['Can be paused', true], ['Can be renewed', true]];
+document.getElementById('options').innerHTML = options.map(([n, ok]) =>
+  `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${n}</span><span style="font-size:13px;font-weight:500;color:${ok ? '#047857' : '#475569'}">${ok ? 'Allowed' : 'Off'}</span></div>`).join('');
+
+const activity = [
+  ['Invoice INV-2026-0042 created by billing run', '6 Oct 2026 · 09:00', '#2563EB'],
+  ['Subscription activated by Priya Sharma', '6 Oct 2026 · 08:42', '#14C8A0'],
+  ['Quotation accepted by customer', '5 Oct 2026 · 16:10', '#2563EB'],
+  ['Quotation sent to ops@northwind.in', '3 Oct 2026 · 11:25', '#94A3B8'],
+  ['Created from template Enterprise starter (valid 30 days)', '1 Oct 2026 · 14:02', '#94A3B8']
+];
+const renderActivity = () => document.getElementById('activity').innerHTML = activity.map(([t, d, c]) =>
+  `<li><div class="rail"><span style="background:${c}"></span><span></span></div><div class="body"><span>${t}</span><span class="muted" style="font-size:12px">${d}</span></div></li>`).join('');
+renderActivity();
+
+// Pause / Resume toggles the status badge and logs the change.
+const toast = document.getElementById('toast');
+document.querySelector('[data-act=pause]').addEventListener('click', (e) => {
+  const badge = document.getElementById('status');
+  const paused = badge.textContent === 'Paused';
+  badge.textContent = paused ? 'Active' : 'Paused';
+  badge.className = 'badge ' + (paused ? 'tone-success' : 'tone-warning');
+  e.target.textContent = paused ? 'Pause' : 'Resume';
+  activity.unshift([paused ? 'Subscription resumed by Priya Sharma' : 'Subscription paused by Priya Sharma', '31 Oct 2026 · just now', paused ? '#14C8A0' : '#F59E0B']);
+  renderActivity();
+  toast.textContent = paused ? 'SUB-000123 resumed' : 'SUB-000123 paused. It will be skipped on billing day.';
+  toast.hidden = false;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => (toast.hidden = true), 5000);
+});
+</script>
+</body>
+</html>
