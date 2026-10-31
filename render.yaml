@@ -1,0 +1,29 @@
+# Render Blueprint: New -> Blueprint -> pick this repo. Free web service + free PostgreSQL.
+databases:
+  - name: brightloop-db
+    plan: free
+    region: singapore
+    databaseName: brightloop
+    user: brightloop
+
+services:
+  - type: web
+    name: brightloop
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: DB_HOST
+        fromDatabase: {name: brightloop-db, property: host}
+      - key: DB_PORT
+        fromDatabase: {name: brightloop-db, property: port}
+      - key: DB_NAME
+        fromDatabase: {name: brightloop-db, property: database}
+      - key: DB_USER
+        fromDatabase: {name: brightloop-db, property: user}
+      - key: DB_PASSWORD
+        fromDatabase: {name: brightloop-db, property: password}
+      - key: ADMIN_PASSWORD
+        sync: false
