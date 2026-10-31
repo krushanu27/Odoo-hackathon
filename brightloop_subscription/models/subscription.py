@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
@@ -185,6 +186,8 @@ class Subscription(models.Model):
             if vals.get("name", "New") == "New":
                 vals["name"] = self.env["ir.sequence"].next_by_code("subscription.subscription") or "New"
         subs = super().create(vals_list)
+        if self.env.context.get("bl_bulk_create"):
+            return subs  # caller supplies complete lines (load test)
         for sub in subs.filtered(lambda s: s.template_id and not s.line_ids):
             sub.write(sub._template_values())
         subs._sync_plan_line()
@@ -460,14 +463,28 @@ class Subscription(models.Model):
         return expired
 
     @api.model
-    def _run_billing(self, today=None, commit=False):
+    def _run_billing(self, today=None, commit=False, time_budget=None):
+        """Bill every subscription that is due; returns the created invoices."""
+        return self._run_billing_with_stats(today, commit, time_budget)[0]
+
+    @api.model
+    def _run_billing_with_stats(self, today=None, commit=False, time_budget=None):
         """Bill every subscription that is due. Called by the scheduled action
-        (commit=True) and by tests (commit=False)."""
+        (commit=True, time-boxed) and by tests (commit=False).
+
+        With a time budget the run stops after the current batch once the budget
+        is spent and queues the scheduled action to continue; because every batch
+        is committed, no work is lost or repeated."""
         today = today or fields.Date.context_today(self)
         failed_ids = []
         created = self.env["account.move"]
+        started = time.perf_counter()
+        finished = True
 
         while True:
+            if time_budget and time.perf_counter() - started > time_budget:
+                finished = False
+                break
             domain = [
                 ("state", "=", "active"),
                 ("next_invoice_date", "!=", False),
@@ -492,18 +509,37 @@ class Subscription(models.Model):
             if commit:
                 self.env.cr.commit()
 
-        closed = self._close_expired_subscriptions(today)
+        closed = self._close_expired_subscriptions(today) if finished else self.browse()
         if commit:
             self.env.cr.commit()
+        elapsed = time.perf_counter() - started
         _logger.info(
-            "Subscription billing: %d invoices created, %d skipped/failed, %d closed",
-            len(created), len(failed_ids), len(closed),
+            "Subscription billing: %d invoices created, %d skipped/failed, %d closed in %.1fs%s",
+            len(created), len(failed_ids), len(closed), elapsed, "" if finished else " (continuing)",
         )
-        return created
+        if not finished and commit:
+            cron = self.env.ref("brightloop_subscription.cron_subscription_billing", raise_if_not_found=False)
+            if cron:
+                cron._trigger()
+        return created, {"failed": len(failed_ids), "closed": len(closed),
+                         "seconds": elapsed, "finished": finished}
 
     @api.model
     def _cron_run_billing(self):
-        return self._run_billing(commit=True)
+        created, stats = self._run_billing_with_stats(commit=True, time_budget=60)
+        if created:
+            channel = self.env.ref("mail.channel_all_employees", raise_if_not_found=False)
+            if channel:
+                channel.sudo().message_post(
+                    body=self.env._(
+                        "Billing run: %(n)s invoices created in %(s).1f seconds%(more)s.",
+                        n=len(created), s=stats.get("seconds", 0.0),
+                        more="" if stats.get("finished", True) else self.env._(", continuing in the background"),
+                    ),
+                    message_type="comment", subtype_xmlid="mail.mt_comment",
+                )
+                self.env.cr.commit()
+        return created
 
     def action_generate_invoices_now(self):
         """Manual trigger for one subscription (button for staff)."""

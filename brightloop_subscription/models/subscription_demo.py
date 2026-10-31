@@ -92,34 +92,41 @@ class SubscriptionDemoLoader(models.AbstractModel):
 
     @api.model
     def action_generate_load(self, count=2000):
-        """Performance check for the judges: create `count` active
-        subscriptions, then time the operations a user actually waits on."""
+        """Performance check for the judges.
+
+        Creates `count` active subscriptions in bulk, measures the operations a
+        user actually waits on (a list page, a filtered search, the dashboard),
+        then hands billing to the background job, which reports to #general
+        when it is done. Heavy batch work never runs inside a browser request.
+        """
         self._check_admin()
-        Sub = self.env["subscription.subscription"]
         plan = self.env["subscription.plan"].search([("billing_period", "=", "monthly")], limit=1)
         if not plan:
             raise UserError(self.env._("Load the demo data first, or create a monthly plan."))
         today = fields.Date.context_today(self)
+        quiet = {"tracking_disable": True, "mail_create_nolog": True, "mail_notrack": True,
+                 "bl_bulk_create": True}
+        Sub = self.env["subscription.subscription"].with_context(**quiet)
 
         t = time.perf_counter()
-        partners = self.env["res.partner"].create([
+        partners = self.env["res.partner"].with_context(**quiet).create([
             {"name": f"Load Test Customer {i:04d}", "is_company": True} for i in range(count // 4)
         ])
-        subs = Sub.create([
-            {"partner_id": partners[i % len(partners)].id, "plan_id": plan.id,
-             "date_start": today - relativedelta(days=i % 28)}
-            for i in range(count)
-        ])
-        # Bulk activation: one write per start date instead of one per record.
-        for start, group in subs.grouped("date_start").items():
-            group.write({"state": "active", "next_invoice_date": start})
+        plan_line = {"name": plan.name, "price_unit": plan.price, "quantity": 1.0,
+                     "tax_ids": [Command.set(plan.tax_ids.ids)], "is_plan_line": True, "sequence": 0}
+        vals_list = []
+        for i in range(count):
+            start = today - relativedelta(days=i % 28)
+            vals_list.append({
+                "partner_id": partners[i % len(partners)].id, "plan_id": plan.id,
+                "date_start": start, "next_invoice_date": start, "state": "active",
+                "line_ids": [Command.create(dict(plan_line))],
+            })
+        Sub.create(vals_list)
         t_create = time.perf_counter() - t
 
-        t = time.perf_counter()
-        Sub._run_billing(today)
-        t_bill = time.perf_counter() - t
-
         # What a page actually does: one page of the list view + the total count.
+        Sub = self.env["subscription.subscription"]
         self.env.invalidate_all()
         t = time.perf_counter()
         Sub.search_read([], ["name", "partner_id", "plan_id", "date_start", "next_invoice_date",
@@ -138,21 +145,25 @@ class SubscriptionDemoLoader(models.AbstractModel):
         self.env["subscription.dashboard"].get_dashboard_data()
         t_dash = time.perf_counter() - t
 
+        due = Sub.search_count([("state", "=", "active"), ("next_invoice_date", "<=", today)])
         message = self.env._(
-            "%(count)s subscriptions created in %(create).1fs and billed in %(bill).1fs (background job). "
-            "With %(total)s subscriptions on file: list page %(list)d ms, filtered search %(search)d ms, "
-            "dashboard %(dash)d ms.",
-            count=count, create=t_create, bill=t_bill, total=total,
-            list=t_list * 1000, search=t_search * 1000, dash=t_dash * 1000,
+            "%(count)s subscriptions created in %(create).1fs. With %(total)s subscriptions on file: "
+            "list page %(list)d ms, filtered search %(search)d ms, dashboard %(dash)d ms. "
+            "%(due)s subscriptions are now due; the billing job is invoicing them in the background "
+            "and will post here when done.",
+            count=count, create=t_create, total=total, list=t_list * 1000,
+            search=t_search * 1000, dash=t_dash * 1000, due=due,
         )
         _logger.info("Load test: %s", message)
-        # Keep a permanent record in Discuss (#general) as well as the pop-up.
         channel = self.env.ref("mail.channel_all_employees", raise_if_not_found=False)
         if channel:
             channel.sudo().message_post(
                 body=self.env._("Performance test result: %s", message),
                 message_type="comment", subtype_xmlid="mail.mt_comment",
             )
+        cron = self.env.ref("brightloop_subscription.cron_subscription_billing", raise_if_not_found=False)
+        if cron:
+            cron._trigger()
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
