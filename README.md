@@ -96,7 +96,7 @@ batch of 100, re-queues itself until the backlog is done and posts a summary to 
 
 ## Tests
 
-26 automated tests (`brightloop_subscription/tests/`): billing (current period, no duplicates,
+27 automated tests (`brightloop_subscription/tests/`): billing (current period, no duplicates,
 catch-up, pause/resume, expiry and auto-close, 150 subscriptions in one run), security (isolation,
 no direct writes, portal actions, whitelist, password policy), templates, discounts (percentage,
 minimum quantity, product-specific, expiry, usage limit), dashboard figures and add-ons
@@ -117,6 +117,18 @@ Upgrade, run all tests, restart and push in one command:
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools\dev.ps1 all "commit message"
 ```
+
+## Demo logins
+
+**Configuration → Create Demo Logins** (also run by *Load Demo Data*) creates one login per role:
+
+| Role | Login | Password |
+|---|---|---|
+| Admin | the account that created the database | — |
+| Staff | `staff@brightloop.demo` | `Staff#Demo2026` |
+| Customer (portal) | shown on screen (a demo customer with an active subscription) | `Customer#2026` |
+
+Demo-only credentials — archive these users outside a demo.
 
 ## Demo walkthrough (one billing month at Brightloop)
 

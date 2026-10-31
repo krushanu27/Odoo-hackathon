@@ -1,6 +1,6 @@
 {
     "name": "Brightloop Subscriptions",
-    "version": "19.0.1.7.0",
+    "version": "19.0.1.8.0",
     "summary": "Subscription plans, recurring billing, discounts and customer portal",
     "description": """
 Subscription Management System for Brightloop Software.

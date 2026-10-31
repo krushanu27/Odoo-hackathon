@@ -78,6 +78,7 @@ class SubscriptionDemoLoader(models.AbstractModel):
         ])
         self._create_subscriptions(rng, today, partners, plans, products)
         self._post_and_pay(rng, today)
+        self._create_demo_logins()
         ICP.set_param(self.FLAG, fields.Datetime.to_string(fields.Datetime.now()))
         return {
             "type": "ir.actions.client",
@@ -168,6 +169,68 @@ class SubscriptionDemoLoader(models.AbstractModel):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {"title": self.env._("Load test complete"), "message": message,
+                       "type": "success", "sticky": True},
+        }
+
+    # Demo-only credentials, shown on screen and in the README. They satisfy the
+    # password policy; change or archive these users outside a demo.
+    DEMO_STAFF_LOGIN = "staff@brightloop.demo"
+    DEMO_STAFF_PASSWORD = "Staff#Demo2026"
+    DEMO_CUSTOMER_PASSWORD = "Customer#2026"
+
+    @api.model
+    def _create_demo_logins(self):
+        """One internal Staff user and one portal Customer user. Idempotent."""
+        Users = self.env["res.users"].sudo().with_context(no_reset_password=True)
+        groups_field = "group_ids" if "group_ids" in Users._fields else "groups_id"
+        staff_group = self.env.ref("brightloop_subscription.group_subscription_staff")
+        portal_group = self.env.ref("base.group_portal")
+
+        staff = Users.search([("login", "=", self.DEMO_STAFF_LOGIN)], limit=1)
+        if not staff:
+            staff = Users.create({
+                "name": "Priya Staff (demo)",
+                "login": self.DEMO_STAFF_LOGIN,
+                "email": self.DEMO_STAFF_LOGIN,
+                "password": self.DEMO_STAFF_PASSWORD,
+                groups_field: [Command.link(staff_group.id)],
+            })
+
+        sub = self.env["subscription.subscription"].sudo().search(
+            [("state", "=", "active"), ("invoice_ids", "!=", False)], order="id", limit=1
+        ) or self.env["subscription.subscription"].sudo().search(
+            [("state", "in", ("active", "paused", "confirmed"))], order="id", limit=1
+        )
+        customer = self.env["res.users"]
+        if sub:
+            partner = sub.partner_id.commercial_partner_id
+            customer = Users.search([("partner_id", "=", partner.id)], limit=1)
+            if not customer:
+                login = partner.email or f"customer{partner.id}@brightloop.demo"
+                customer = Users.search([("login", "=", login)], limit=1) or Users.create({
+                    "partner_id": partner.id,
+                    "login": login,
+                    "password": self.DEMO_CUSTOMER_PASSWORD,
+                    groups_field: [Command.set([portal_group.id])],
+                })
+        return staff, customer
+
+    @api.model
+    def action_create_demo_logins(self):
+        self._check_admin()
+        staff, customer = self._create_demo_logins()
+        lines = [self.env._("Staff: %(login)s / %(pw)s", login=staff.login, pw=self.DEMO_STAFF_PASSWORD)]
+        if customer:
+            lines.append(self.env._("Customer (%(name)s): %(login)s / %(pw)s",
+                                    name=customer.partner_id.name, login=customer.login,
+                                    pw=self.DEMO_CUSTOMER_PASSWORD))
+        else:
+            lines.append(self.env._("No running subscription yet, so no customer login was created. "
+                                    "Load the demo data first."))
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {"title": self.env._("Demo logins ready"), "message": " | ".join(lines),
                        "type": "success", "sticky": True},
         }
 
