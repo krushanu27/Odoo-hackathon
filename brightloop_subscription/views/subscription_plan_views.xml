@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="subscription_plan_view_list" model="ir.ui.view">
+        <field name="name">subscription.plan.list</field>
+        <field name="model">subscription.plan</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="billing_period"/>
+                <field name="price"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="tax_ids" widget="many2many_tags" optional="show"/>
+                <field name="min_quantity"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="auto_close" optional="hide"/>
+                <field name="allow_close" optional="hide"/>
+                <field name="allow_pause" optional="hide"/>
+                <field name="allow_renew" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="subscription_plan_view_form" model="ir.ui.view">
+        <field name="name">subscription.plan.form</field>
+        <field name="model">subscription.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Business Monthly"/></h1>
+                    </div>
+                    <group>
+                        <group string="Pricing">
+                            <field name="price"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="tax_ids" widget="many2many_tags"/>
+                            <field name="billing_period"/>
+                            <field name="min_quantity"/>
+                        </group>
+                        <group string="Availability">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <group string="Lifecycle Rules">
+                        <group>
+                            <field name="auto_close"/>
+                            <field name="allow_close"/>
+                        </group>
+                        <group>
+                            <field name="allow_pause"/>
+                            <field name="allow_renew"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Internal notes about this plan"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="subscription_plan_view_search" model="ir.ui.view">
+        <field name="name">subscription.plan.search</field>
+        <field name="model">subscription.plan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="filter_monthly" string="Monthly" domain="[('billing_period', '=', 'monthly')]"/>
+                <filter name="filter_yearly" string="Yearly" domain="[('billing_period', '=', 'yearly')]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_period" string="Billing Period" context="{'group_by': 'billing_period'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="subscription_plan_action" model="ir.actions.act_window">
+        <field name="name">Subscription Plans</field>
+        <field name="res_model">subscription.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first subscription plan</p>
+            <p>Set the price, billing frequency and lifecycle rules for each plan.</p>
+        </field>
+    </record>
+</odoo>

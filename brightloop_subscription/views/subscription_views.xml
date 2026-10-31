@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="subscription_view_list" model="ir.ui.view">
+        <field name="name">subscription.subscription.list</field>
+        <field name="model">subscription.subscription</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'closed'" decoration-warning="state == 'paused'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="plan_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="next_invoice_date" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('draft', 'quotation')"
+                       decoration-primary="state == 'confirmed'"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'paused'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="subscription_view_form" model="ir.ui.view">
+        <field name="name">subscription.subscription.form</field>
+        <field name="model">subscription.subscription</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_send_quotation" string="Send Quotation" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="btn-primary" invisible="state not in ('draft', 'quotation')"/>
+                    <button name="action_activate" string="Activate" type="object"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_pause" string="Pause" type="object"
+                            invisible="state != 'active' or not plan_allow_pause"/>
+                    <button name="action_resume" string="Resume" type="object"
+                            class="btn-primary" invisible="state != 'paused'"/>
+                    <button name="action_renew" string="Renew" type="object"
+                            invisible="state not in ('active', 'closed') or not plan_allow_renew"/>
+                    <button name="action_close" string="Close" type="object"
+                            invisible="state not in ('confirmed', 'active', 'paused')"
+                            confirm="Close this subscription?"/>
+                    <button name="action_reset_to_draft" string="Back to Draft" type="object"
+                            invisible="state != 'quotation'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,quotation,confirmed,active,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <field name="plan_allow_pause" invisible="1"/>
+                    <field name="plan_allow_close" invisible="1"/>
+                    <field name="plan_allow_renew" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="partner_id" readonly="state not in ('draft', 'quotation')"/>
+                            <field name="plan_id" readonly="state not in ('draft', 'quotation')"/>
+                            <field name="payment_term_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="date_start" readonly="state not in ('draft', 'quotation')"/>
+                            <field name="date_end"/>
+                            <field name="next_invoice_date" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines" name="lines">
+                            <field name="line_ids" readonly="state == 'closed'">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="is_plan_line" column_invisible="True" force_save="1"/>
+                                    <field name="product_id" readonly="is_plan_line" force_save="1"/>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit" readonly="is_plan_line" force_save="1"/>
+                                    <field name="tax_ids" widget="many2many_tags"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="price_subtotal"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="amount_untaxed"/>
+                                <field name="amount_tax"/>
+                                <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Terms" name="terms">
+                            <field name="note" placeholder="Terms and conditions"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="subscription_view_search" model="ir.ui.view">
+        <field name="name">subscription.subscription.search</field>
+        <field name="model">subscription.subscription</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="plan_id"/>
+                <filter name="filter_quotes" string="Quotations" domain="[('state', 'in', ('draft', 'quotation'))]"/>
+                <filter name="filter_active" string="Active" domain="[('state', '=', 'active')]"/>
+                <filter name="filter_paused" string="Paused" domain="[('state', '=', 'paused')]"/>
+                <filter name="filter_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <separator/>
+                <filter name="filter_due" string="Due for Billing"
+                        domain="[('state', '=', 'active'), ('next_invoice_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_plan" string="Plan" context="{'group_by': 'plan_id'}"/>
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="subscription_action" model="ir.actions.act_window">
+        <field name="name">Subscriptions</field>
+        <field name="res_model">subscription.subscription</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first subscription</p>
+        </field>
+    </record>
+</odoo>
