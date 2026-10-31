@@ -11,6 +11,8 @@ class TestSecurity(TransactionCase):
             "name": "Sec Plan", "price": 10.0, "billing_period": "monthly",
             "allow_pause": True,
         })
+        # Isolate from discount rules that exist in the database being tested.
+        cls.env["subscription.discount"].search([]).active = False
         cls.portal_user = new_test_user(cls.env, login="cust_a", password="Cust#Pass123", groups="base.group_portal")
         cls.other_partner = cls.env["res.partner"].create({"name": "Other Customer"})
         Sub = cls.env["subscription.subscription"]

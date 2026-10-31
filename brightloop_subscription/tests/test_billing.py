@@ -19,6 +19,8 @@ class TestBilling(TransactionCase):
             "allow_pause": True,
             "auto_close": True,
         })
+        # Isolate from discount rules that exist in the database being tested.
+        cls.env["subscription.discount"].search([]).active = False
         cls.Sub = cls.env["subscription.subscription"]
 
     def _active_sub(self, start, end=None):

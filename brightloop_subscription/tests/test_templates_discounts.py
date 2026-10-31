@@ -16,6 +16,8 @@ class TestTemplatesDiscounts(TransactionCase):
             "name": "Seats", "price": 100.0, "billing_period": "monthly", "min_quantity": 1,
         })
         cls.addon = cls.env["product.product"].create({"name": "Add-on", "list_price": 50.0, "taxes_id": [(5, 0, 0)]})
+        # Isolate from discount rules that exist in the database being tested.
+        cls.env["subscription.discount"].search([]).active = False
         cls.Sub = cls.env["subscription.subscription"]
         cls.Discount = cls.env["subscription.discount"]
 
