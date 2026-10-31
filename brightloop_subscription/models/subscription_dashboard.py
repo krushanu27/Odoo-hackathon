@@ -54,27 +54,31 @@ class SubscriptionDashboard(models.AbstractModel):
         ]
 
         # ---------------- invoices ----------------
-        inv_domain = [
+        # Invoiced / collected / paid follow the date range. Outstanding and
+        # overdue are always "as of today" across all dates: money still owed
+        # does not stop being owed because it was invoiced last quarter.
+        base_domain = [
             ("move_type", "=", "out_invoice"),
             ("state", "=", "posted"),
             ("subscription_id", "!=", False),
         ]
+        if plan_id:
+            base_domain.append(("subscription_id.plan_id", "=", plan_id))
+        if partner_id:
+            base_domain.append(("partner_id", "child_of", partner_id))
+        inv_domain = list(base_domain)
         if date_from:
             inv_domain.append(("invoice_date", ">=", date_from))
         if date_to:
             inv_domain.append(("invoice_date", "<=", date_to))
-        if plan_id:
-            inv_domain.append(("subscription_id.plan_id", "=", plan_id))
-        if partner_id:
-            inv_domain.append(("partner_id", "child_of", partner_id))
 
-        [[invoiced, residual, inv_count]] = Move._read_group(
+        [[invoiced, period_residual, inv_count]] = Move._read_group(
             inv_domain, [], ["amount_total_signed:sum", "amount_residual_signed:sum", "__count"]
         )
-        invoiced, residual = invoiced or 0.0, residual or 0.0
+        invoiced, period_residual = invoiced or 0.0, period_residual or 0.0
 
-        open_domain = inv_domain + [("payment_state", "in", ("not_paid", "partial"))]
-        [[open_count]] = Move._read_group(open_domain, [], ["__count"])
+        open_domain = base_domain + [("payment_state", "in", ("not_paid", "partial"))]
+        [[outstanding, open_count]] = Move._read_group(open_domain, [], ["amount_residual_signed:sum", "__count"])
         overdue_domain = open_domain + [("invoice_date_due", "<", today)]
         [[overdue_amount, overdue_count]] = Move._read_group(
             overdue_domain, [], ["amount_residual_signed:sum", "__count"]
@@ -115,7 +119,7 @@ class SubscriptionDashboard(models.AbstractModel):
 
         # ---------------- 6-month trend ----------------
         start = (date_to or today).replace(day=1) - relativedelta(months=5)
-        trend_domain = [d for d in inv_domain if d[0] != "invoice_date"] + [
+        trend_domain = base_domain + [
             ("invoice_date", ">=", start), ("invoice_date", "<=", date_to or today),
         ]
         trend_raw = {
@@ -150,8 +154,8 @@ class SubscriptionDashboard(models.AbstractModel):
             },
             "revenue": {
                 "invoiced": invoiced,
-                "collected": invoiced - residual,
-                "outstanding": residual,
+                "collected": invoiced - period_residual,
+                "outstanding": outstanding or 0.0,
                 "overdue": overdue_amount or 0.0,
             },
             "invoices": {
