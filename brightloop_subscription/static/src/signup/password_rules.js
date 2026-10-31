@@ -13,6 +13,12 @@ function setup() {
     if (!list || !input) {
         return;
     }
+    // Odoo 19 wraps the field in an .input-group with the show/hide button;
+    // keep the checklist below that group so the field keeps its full width.
+    const group = input.closest(".input-group");
+    if (group && group.contains(list)) {
+        group.after(list);
+    }
     const items = list.querySelectorAll("li[data-rule]");
     const update = () => {
         for (const item of items) {
