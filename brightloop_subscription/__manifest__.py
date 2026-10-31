@@ -41,12 +41,16 @@ Built on native Odoo Invoicing (invoices, taxes, payments) and Portal.
         "views/portal_templates.xml",
         "views/auth_templates.xml",
         "views/account_move_views.xml",
+        "views/theme_templates.xml",
     ],
     "assets": {
         "web.assets_backend": [
+            "brightloop_subscription/static/src/scss/tokens.scss",
+            "brightloop_subscription/static/src/scss/backend_theme.scss",
             "brightloop_subscription/static/src/dashboard/*",
         ],
         "web.assets_frontend": [
+            "brightloop_subscription/static/src/scss/tokens.scss",
             "brightloop_subscription/static/src/scss/portal.scss",
             "brightloop_subscription/static/src/signup/password_rules.js",
         ],

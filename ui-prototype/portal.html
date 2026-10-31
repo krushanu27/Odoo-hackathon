@@ -9,14 +9,14 @@
 <body>
 <header class="portal-top">
   <div class="inner">
-    <a class="logo" href="index.html" style="padding:0;color:#0F172A"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#0A1628"></rect><circle cx="14" cy="14" r="6.5" fill="none" stroke="#14C8A0" stroke-width="3"></circle><circle cx="14" cy="7.5" r="2.6" fill="#FFFFFF"></circle></svg>Brightloop</a>
+    <a class="logo" href="index.html" style="padding:0;color:#181D2A"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#181D2A"></rect><circle cx="14" cy="14" r="6.5" fill="none" stroke="#748EFE" stroke-width="3"></circle><circle cx="14" cy="7.5" r="2.6" fill="#FFFFFF"></circle></svg>Brightloop</a>
     <nav aria-label="Portal">
       <a href="#" aria-current="page">My subscriptions</a>
       <a href="#">Invoices</a>
       <a href="#">Payments</a>
       <a href="#">Profile</a>
     </nav>
-    <div class="user"><div class="avatar" style="background:#D7F5EC;color:#047857">RM</div><strong>Rahul Menon</strong></div>
+    <div class="user"><div class="avatar" style="background:#EEF1FF;color:#4A62E0">RM</div><strong>Rahul Menon</strong></div>
   </div>
 </header>
 
@@ -28,7 +28,7 @@
 
   <div class="notice" role="status">
     <div style="display:flex;align-items:center;gap:14px">
-      <span style="width:40px;height:40px;border-radius:10px;background:#FEF0C7;color:#B45309;display:grid;place-items:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M12 6v6l4 2"></path></svg></span>
+      <span style="width:40px;height:40px;border-radius:10px;background:#FFF6E5;color:#A15C07;display:grid;place-items:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M12 6v6l4 2"></path></svg></span>
       <div style="display:flex;flex-direction:column">
         <strong>1 invoice due in 5 days</strong>
         <span class="muted" style="font-size:14px"><span class="mono">INV-2026-0042</span> · ₹83,898.00 · due 5 Nov 2026</span>
@@ -77,7 +77,7 @@ const renderSubs = () => document.getElementById('subs').innerHTML = subs.map((s
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:auto">
       <a class="btn btn-secondary" href="#">View details</a>
-      <button type="button" class="btn btn-ghost" style="color:#1D4ED8" data-i="${i}">${s.action}</button>
+      <button type="button" class="btn btn-ghost" style="color:#4A62E0" data-i="${i}">${s.action}</button>
     </div>
   </article>`).join('');
 renderSubs();

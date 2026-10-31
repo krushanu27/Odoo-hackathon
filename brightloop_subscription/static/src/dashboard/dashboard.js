@@ -7,11 +7,11 @@ const { DateTime } = luxon;
 
 // Colours for "subscriptions by state" (DESIGN.md chart palette).
 const STATE_COLORS = {
-    active: "#14C8A0",
-    quotations: "#2563EB",
-    confirmed: "#93B4F5",
-    paused: "#F59E0B",
-    closed: "#94A3B8",
+    active: "#748EFE",
+    quotations: "#181D2A",
+    confirmed: "#B9C6FF",
+    paused: "#F5A524",
+    closed: "#C9CED6",
 };
 
 function rangeFor(key) {
@@ -157,7 +157,7 @@ export class SubscriptionDashboard extends Component {
         const rows = this.stateRows;
         const total = rows.reduce((sum, r) => sum + r.value, 0);
         if (!total) {
-            return "background: #E2E8F0";
+            return "background: #E8EBED";
         }
         let start = 0;
         const stops = rows.map((r) => {

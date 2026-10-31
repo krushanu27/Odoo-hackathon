@@ -1,28 +1,18 @@
-// Finance dashboard. Tokens follow DESIGN.md.
-$bl-navy: #0A1628;
-$bl-primary: #2563EB;
-$bl-primary-50: #EFF4FF;
-$bl-accent: #14C8A0;
-$bl-text: #0F172A;
-$bl-muted: #475569;
-$bl-border: #E2E8F0;
-$bl-surface: #F8FAFC;
-$bl-danger: #B91C1C;
-$bl-success: #047857;
-$bl-warning: #B45309;
-$bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+// Finance dashboard. Tokens come from scss/tokens.scss (DESIGN.md §2).
 
 .bl_dashboard {
-    background: $bl-surface;
-    color: $bl-text;
+    background: $bl-canvas;
+    color: $bl-ink;
+    font-family: $bl-font;
+    -webkit-font-smoothing: antialiased;
 
     .bl_page {
         max-width: 1440px;
         margin: 0 auto;
-        padding: 32px;
+        padding: 28px 32px 40px;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 20px;
 
         @media (max-width: 640px) {
             padding: 16px;
@@ -32,22 +22,26 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     .bl_header {
         display: flex;
         flex-wrap: wrap;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
         gap: 16px;
+        padding: 20px 24px;
+        background: $bl-surface;
+        border-radius: $bl-radius-xl;
+        box-shadow: $bl-shadow-sm;
     }
     .bl_title {
-        font-size: 32px;
-        line-height: 40px;
-        font-weight: 700;
+        font-size: 28px;
+        line-height: 36px;
+        font-weight: 500;
+        letter-spacing: -.01em;
         margin: 0;
+        color: $bl-ink;
     }
     .bl_eyebrow {
-        font-size: 12px;
-        line-height: 16px;
-        font-weight: 600;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+        font-size: 13px;
+        line-height: 18px;
+        font-weight: 400;
         color: $bl-muted;
     }
     .bl_controls {
@@ -55,33 +49,63 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
         flex-wrap: wrap;
         align-items: center;
         gap: 12px;
+
+        .btn-primary {
+            height: 44px;
+            padding: 0 20px;
+            border-radius: $bl-radius-md;
+            background: $bl-ink;
+            border-color: $bl-ink;
+            color: #fff;
+            font-weight: 500;
+
+            &:hover,
+            &:focus-visible {
+                background: $bl-ink-700;
+                border-color: $bl-ink-700;
+            }
+        }
     }
     .bl_select {
         width: auto;
         min-width: 180px;
+        height: 44px;
+        padding-left: 16px;
+        border: 1px solid $bl-line;
+        border-radius: $bl-radius-md;
+        color: $bl-ink;
+        font-weight: 500;
+        background-color: $bl-surface;
+
+        &:focus {
+            border-color: $bl-brand;
+            box-shadow: 0 0 0 3px $bl-brand-50;
+        }
     }
+    // Range picker: the selected range takes the brand fill
     .bl_segmented {
         display: flex;
+        gap: 4px;
         padding: 4px;
-        gap: 2px;
-        background: #F1F5F9;
-        border-radius: 10px;
+        background: $bl-surface-2;
+        border-radius: $bl-radius-md;
 
         button {
-            height: 32px;
-            padding: 0 14px;
+            height: 36px;
+            padding: 0 16px;
             border: 0;
-            border-radius: 8px;
+            border-radius: $bl-radius-sm;
             background: transparent;
             color: $bl-muted;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
+            transition: background 150ms $bl-ease, color 150ms $bl-ease;
+
+            &:hover { color: $bl-ink; }
 
             &[aria-pressed="true"] {
-                background: #fff;
-                color: $bl-text;
-                font-weight: 600;
-                box-shadow: 0 1px 2px rgba(15, 23, 42, .08);
+                background: $bl-brand;
+                color: #fff;
             }
         }
     }
@@ -89,7 +113,7 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     .bl_body {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 20px;
         transition: opacity 150ms;
     }
     .bl_stale {
@@ -98,10 +122,10 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     }
 
     .bl_card {
-        background: #fff;
-        border: 1px solid $bl-border;
-        border-radius: 14px;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+        background: $bl-surface;
+        border: 0;
+        border-radius: $bl-radius-lg;
+        box-shadow: $bl-shadow-sm;
         min-width: 0;
     }
     .bl_pad {
@@ -109,6 +133,7 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     }
     .bl_pad_head {
         padding: 20px 24px;
+        border-bottom: 1px solid $bl-line;
     }
     .bl_card_head {
         display: flex;
@@ -117,15 +142,29 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
         justify-content: space-between;
         gap: 12px;
         margin-bottom: 16px;
+
+        .btn-link {
+            height: 32px;
+            padding: 0 12px;
+            border-radius: $bl-radius-sm;
+            background: $bl-surface-2;
+            color: $bl-ink;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+
+            &:hover { background: $bl-line; }
+        }
     }
     .bl_pad_head.bl_card_head {
         margin-bottom: 0;
     }
     .bl_card_title {
         font-size: 18px;
-        line-height: 28px;
-        font-weight: 600;
+        line-height: 26px;
+        font-weight: 500;
         margin: 0;
+        color: $bl-ink;
     }
     .bl_muted {
         color: $bl-muted;
@@ -133,50 +172,72 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
         margin: 0;
     }
     .bl_mono {
-        font-family: $bl-mono;
+        font-family: $bl-font;
         font-variant-numeric: tabular-nums;
     }
     .bl_danger { color: $bl-danger; }
     .bl_success { color: $bl-success; }
     .bl_warning { color: $bl-warning; }
-    .bl_link { color: $bl-primary; }
+    .bl_link { color: $bl-brand-700; font-weight: 500; }
 
-    // KPI tiles
+    // KPI tiles: big, calm numerals like the departure times in the reference
     .bl_kpis {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 24px;
+        gap: 20px;
     }
     .bl_kpi {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
-        padding: 24px;
+        gap: 6px;
+        padding: 22px 24px 24px;
         text-align: left;
+        color: $bl-ink;
         cursor: pointer;
-        transition: box-shadow 150ms;
+        transition: box-shadow 150ms $bl-ease, transform 150ms $bl-ease;
 
+        &::after {
+            content: "";
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: $bl-brand;
+        }
         &:hover {
-            box-shadow: 0 4px 12px rgba(15, 23, 42, .08);
+            box-shadow: $bl-shadow-md;
+            transform: translateY(-1px);
+        }
+        .bl_eyebrow {
+            font-size: 14px;
+            color: $bl-muted;
         }
     }
     .bl_kpi_value {
-        font-size: 36px;
-        line-height: 44px;
-        font-weight: 700;
+        font-size: 40px;
+        line-height: 48px;
+        font-weight: 500;
         letter-spacing: -.02em;
         font-variant-numeric: tabular-nums;
     }
     .bl_kpi_note {
         font-size: 13px;
         color: $bl-muted;
+
+        strong { color: $bl-ink; font-weight: 500; }
+        strong.bl_danger { color: $bl-danger; }
     }
     .bl_skeleton {
         height: 140px;
-        background: linear-gradient(90deg, #F1F5F9 25%, #E9EEF5 50%, #F1F5F9 75%);
+        background: linear-gradient(90deg, $bl-surface 25%, $bl-surface-2 50%, $bl-surface 75%);
         background-size: 200% 100%;
         animation: bl_shimmer 1.2s infinite;
+
+        &::after { display: none; }
     }
     @keyframes bl_shimmer {
         to { background-position: -200% 0; }
@@ -185,7 +246,7 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     .bl_row {
         display: flex;
         flex-wrap: wrap;
-        gap: 24px;
+        gap: 20px;
         align-items: flex-start;
     }
     .bl_grow2 { flex: 2 1 560px; }
@@ -193,11 +254,11 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     .bl_stack {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 20px;
         min-width: 0;
     }
 
-    // Revenue chart
+    // Revenue chart: brand bars with gray companions, like the price histogram
     .bl_legend {
         display: flex;
         gap: 16px;
@@ -213,31 +274,32 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
         align-items: flex-end;
         justify-content: space-around;
         gap: 8px;
-        border-bottom: 1px solid #CBD5E1;
-        background: repeating-linear-gradient(to top, transparent 0, transparent 49px, #EEF2F7 49px, #EEF2F7 50px);
+        border-bottom: 2px solid $bl-ink;
+        background: repeating-linear-gradient(to top, transparent 0, transparent 49px, $bl-surface-2 49px, $bl-surface-2 50px);
         padding-top: 16px;
+        margin-bottom: 28px; // room for the month labels hanging below the axis
     }
     .bl_bar_group {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         position: relative;
-        top: 26px;
+        top: 28px;
     }
     .bl_bars {
         display: flex;
         align-items: flex-end;
-        gap: 6px;
+        gap: 5px;
         height: 200px;
     }
     .bl_bar {
-        width: 22px;
+        width: 14px;
         border-radius: 4px 4px 0 0;
         min-height: 2px;
     }
-    .bl_bar_collected { background: $bl-accent; }
-    .bl_bar_outstanding { background: $bl-primary; }
+    .bl_bar_collected { background: $bl-brand; }
+    .bl_bar_outstanding { background: #C9CED6; }
     .bl_bar_label {
         font-size: 12px;
         color: $bl-muted;
@@ -261,16 +323,16 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
         flex-shrink: 0;
     }
     .bl_donut_hole {
-        width: 100px;
-        height: 100px;
+        width: 108px;
+        height: 108px;
         border-radius: 50%;
-        background: #fff;
+        background: $bl-surface;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
 
-        strong { font-size: 22px; }
+        strong { font-size: 26px; font-weight: 500; letter-spacing: -.02em; }
         span { font-size: 12px; color: $bl-muted; }
     }
     .bl_state_list {
@@ -282,72 +344,82 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
         button {
             width: 100%;
-            height: 34px;
+            height: 36px;
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 0 8px;
+            padding: 0 10px;
             border: 0;
-            border-radius: 6px;
+            border-radius: $bl-radius-sm;
             background: transparent;
-            color: $bl-text;
-            font-size: 13px;
+            color: $bl-ink;
+            font-size: 14px;
 
-            &:hover { background: #F1F5F9; }
+            &:hover { background: $bl-surface-2; }
         }
-        i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+        i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
     }
 
     // Tables
     .bl_table {
-        font-size: 13px;
+        font-size: 14px;
+        --bs-table-bg: transparent;
 
         th {
-            background: #F1F5F9;
+            background: $bl-surface;
             color: $bl-muted;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 400;
             white-space: nowrap;
-            padding: 10px 16px;
+            padding: 12px 24px;
+            border-bottom: 1px solid $bl-line;
         }
         td {
-            padding: 14px 16px;
+            padding: 16px 24px;
             white-space: nowrap;
             vertical-align: middle;
+            border-bottom: 1px dashed $bl-line;
+        }
+        tbody tr:last-child td { border-bottom: 0; }
+        td.bl_danger.fw-semibold {
+            font-weight: 500 !important;
         }
     }
     .bl_clickable {
         cursor: pointer;
-        &:hover td { background: $bl-surface; }
+        &:hover td { background: #F7F8FA; }
     }
     .bl_empty {
-        padding: 32px 24px;
+        padding: 40px 24px;
         text-align: center;
         color: $bl-muted;
     }
 
-    // Small stat grid
+    // Small stat grid: inset gray tiles, like the transfer chips in the reference
     .bl_stat_grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        gap: 10px;
         margin-top: 16px;
 
         button {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            gap: 2px;
             padding: 12px 14px;
-            border: 1px solid $bl-border;
-            border-radius: 10px;
-            background: #fff;
+            border: 0;
+            border-radius: $bl-radius-md;
+            background: $bl-surface-2;
             color: $bl-muted;
             font-size: 13px;
             text-align: left;
+            transition: background 150ms $bl-ease;
 
-            span { font-size: 22px; font-weight: 700; color: $bl-text; }
+            span { font-size: 24px; line-height: 30px; font-weight: 500; color: $bl-ink; }
             span.bl_success { color: $bl-success; }
             span.bl_warning { color: $bl-warning; }
-            &:hover { background: $bl-surface; }
+            &:hover { background: $bl-brand-50; }
         }
     }
 
@@ -363,11 +435,11 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
     .bl_meter {
         height: 6px;
         border-radius: 999px;
-        background: #F1F5F9;
-        margin-top: 6px;
+        background: $bl-surface-2;
+        margin-top: 8px;
         overflow: hidden;
 
-        div { height: 100%; background: $bl-accent; border-radius: 999px; }
+        div { height: 100%; background: $bl-brand; border-radius: 999px; }
     }
     .bl_top_plans {
         margin: 12px 0 0;
@@ -375,15 +447,29 @@ $bl-mono: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 14px;
 
         li {
-            padding: 6px 0;
-            border-bottom: 1px solid #F1F5F9;
+            padding: 8px 0;
+            border-bottom: 1px dashed $bl-line;
 
+            &:last-child { border-bottom: 0; }
+            &::marker { color: $bl-subtle; }
             span:last-child { float: right; }
         }
     }
 
+    .alert-danger {
+        border: 0;
+        border-radius: $bl-radius-md;
+        background: $bl-danger-bg;
+        color: $bl-danger;
+    }
+
     button:focus-visible {
-        outline: 2px solid $bl-primary;
+        outline: 2px solid $bl-brand;
         outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bl_kpi { transition: box-shadow 150ms; }
+        .bl_kpi:hover { transform: none; }
     }
 }
