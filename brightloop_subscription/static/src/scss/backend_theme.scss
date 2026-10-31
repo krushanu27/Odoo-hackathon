@@ -5,51 +5,7 @@
     font-family: $bl-font;
     -webkit-font-smoothing: antialiased;
 
-    // Top navigation: white bar, ink text, brand underline on the open menu
-    .o_main_navbar {
-        --NavBar-entry-color: #{$bl-ink};
-        --NavBar-entry-color--hover: #{$bl-ink};
-        --NavBar-entry-color--active: #{$bl-ink};
-        --NavBar-entry-backgroundColor--hover: #{$bl-surface-2};
-        --NavBar-entry-backgroundColor--active: #{$bl-surface-2};
-        background: $bl-surface;
-        border-bottom: 1px solid $bl-line;
-        color: $bl-ink;
-
-        .o_menu_brand,
-        .o_menu_toggle,
-        .o_nav_entry,
-        .dropdown-toggle {
-            color: $bl-ink;
-        }
-        .o_menu_systray > * > button,
-        .o_menu_systray > * > a {
-            color: $bl-ink;
-        }
-        .o_menu_brand {
-            font-weight: 500;
-        }
-        .o_menu_sections {
-            .o_nav_entry,
-            .dropdown-toggle {
-                color: $bl-muted;
-                font-weight: 500;
-
-                &:hover,
-                &.show,
-                &.active {
-                    color: $bl-ink;
-                    background: transparent;
-                    box-shadow: inset 0 -2px 0 $bl-brand;
-                }
-            }
-        }
-        .o_nav_entry:hover,
-        .dropdown-toggle:hover,
-        .o_menu_toggle:hover {
-            background: $bl-surface-2;
-        }
-    }
+    // Top navigation: keep Odoo's default navbar (readable on every screen)
 
     // Primary action is ink, like the "Select" button; brand is for selection
     .btn-primary {
