@@ -1,5 +1,9 @@
+import logging
+
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 STATES = [
     ("draft", "Draft"),
@@ -9,6 +13,9 @@ STATES = [
     ("paused", "Paused"),
     ("closed", "Closed"),
 ]
+
+# How many subscriptions the billing run processes per database transaction.
+BILLING_BATCH_SIZE = 100
 
 
 class Subscription(models.Model):
@@ -202,8 +209,15 @@ class Subscription(models.Model):
         self.write({"state": "paused"})
 
     def action_resume(self):
+        """Resume billing from today: periods that fell inside the pause are
+        not billed retroactively."""
         self._ensure_state(["paused"])
-        self.write({"state": "active"})
+        today = fields.Date.context_today(self)
+        for sub in self:
+            vals = {"state": "active"}
+            if sub.next_invoice_date and sub.next_invoice_date < today:
+                vals["next_invoice_date"] = today
+            sub.write(vals)
 
     def action_close(self):
         self._ensure_state(["active", "paused", "confirmed"])
@@ -245,3 +259,168 @@ class Subscription(models.Model):
             "domain": [("subscription_id", "=", self.id)],
             "context": {"default_move_type": "out_invoice", "create": False},
         }
+
+    # ------------------------------------------------------------------------
+    # Billing engine
+    #
+    # Guarantees:
+    #  1. Never bills twice: each invoice records the period it covers, an
+    #     existing invoice for a period is skipped, and a PostgreSQL UNIQUE
+    #     constraint on (subscription, period start) is the final guard.
+    #  2. Never skips a cycle: if a run is missed, the next run loops and
+    #     bills every overdue period, one invoice per period.
+    #  3. Scales and survives failures: subscriptions are processed in
+    #     batches, each in its own savepoint; one bad subscription is logged
+    #     and skipped without rolling back the others.
+    # ------------------------------------------------------------------------
+    def _billing_period_end(self, period_start):
+        self.ensure_one()
+        return period_start + self.plan_id._get_period_delta()
+
+    def _prepare_invoice_line_vals(self, period_start, period_end):
+        """One invoice line per subscription line.
+        Extension point: discounts add their lines here."""
+        self.ensure_one()
+        period_label = f"{fields.Date.to_string(period_start)} to {fields.Date.to_string(period_end)}"
+        return [
+            {
+                "product_id": line.product_id.id or False,
+                "name": f"{line.name} ({period_label})",
+                "quantity": line.quantity,
+                "price_unit": line.price_unit,
+                "tax_ids": [Command.set(line.tax_ids.ids)],
+            }
+            for line in self.line_ids.sorted("sequence")
+        ]
+
+    def _prepare_invoice_vals(self, period_start):
+        self.ensure_one()
+        period_end = self._billing_period_end(period_start)
+        return {
+            "move_type": "out_invoice",
+            "partner_id": self.partner_id.id,
+            "company_id": self.company_id.id,
+            "invoice_date": period_start,
+            "invoice_origin": self.name,
+            "invoice_payment_term_id": self.payment_term_id.id or False,
+            "invoice_user_id": self.user_id.id or False,
+            "subscription_id": self.id,
+            "subscription_period_start": period_start,
+            "invoice_line_ids": [
+                Command.create(vals)
+                for vals in self._prepare_invoice_line_vals(period_start, period_end)
+            ],
+        }
+
+    def _is_billable_period(self, period_start):
+        self.ensure_one()
+        return not self.date_end or period_start < self.date_end
+
+    def _generate_due_invoices(self, today=None):
+        """Create one draft invoice for every unbilled period of this
+        subscription whose start is on or before `today`. Returns the invoices."""
+        self.ensure_one()
+        today = today or fields.Date.context_today(self)
+        Move = self.env["account.move"]
+        invoices = Move
+
+        # Row lock: if another billing worker is already on this subscription,
+        # skip it rather than racing it.
+        self.env.cr.execute(
+            "SELECT id FROM subscription_subscription WHERE id = %s FOR UPDATE SKIP LOCKED",
+            [self.id],
+        )
+        if not self.env.cr.fetchone():
+            return invoices
+        self.invalidate_recordset(["next_invoice_date", "state"])
+
+        while (
+            self.state == "active"
+            and self.next_invoice_date
+            and self.next_invoice_date <= today
+            and self._is_billable_period(self.next_invoice_date)
+        ):
+            period_start = self.next_invoice_date
+            already_billed = Move.search_count([
+                ("subscription_id", "=", self.id),
+                ("subscription_period_start", "=", period_start),
+            ], limit=1)
+            if not already_billed:
+                invoices |= Move.create(self._prepare_invoice_vals(period_start))
+            self.next_invoice_date = self._billing_period_end(period_start)
+
+        # Past expiry with nothing left to bill: stop scheduling.
+        if self.next_invoice_date and not self._is_billable_period(self.next_invoice_date):
+            self.next_invoice_date = False
+        return invoices
+
+    @api.model
+    def _close_expired_subscriptions(self, today):
+        expired = self.search([
+            ("state", "in", ("active", "paused")),
+            ("plan_id.auto_close", "=", True),
+            ("date_end", "!=", False),
+            ("date_end", "<=", today),
+        ])
+        if expired:
+            expired.write({"state": "closed", "next_invoice_date": False})
+            for sub in expired:
+                sub.message_post(body=self.env._("Closed automatically on expiry."))
+        return expired
+
+    @api.model
+    def _run_billing(self, today=None, commit=False):
+        """Bill every subscription that is due. Called by the scheduled action
+        (commit=True) and by tests (commit=False)."""
+        today = today or fields.Date.context_today(self)
+        failed_ids = []
+        created = self.env["account.move"]
+
+        while True:
+            domain = [
+                ("state", "=", "active"),
+                ("next_invoice_date", "!=", False),
+                ("next_invoice_date", "<=", today),
+            ]
+            if failed_ids:
+                domain.append(("id", "not in", failed_ids))
+            batch = self.search(domain, order="next_invoice_date, id", limit=BILLING_BATCH_SIZE)
+            if not batch:
+                break
+            for sub in batch:
+                try:
+                    with self.env.cr.savepoint():
+                        created |= sub._generate_due_invoices(today)
+                        # Locked by another worker or nothing billable: don't
+                        # pick it up again in this run.
+                        if sub.next_invoice_date and sub.next_invoice_date <= today:
+                            failed_ids.append(sub.id)
+                except Exception:
+                    _logger.exception("Billing failed for subscription %s", sub.name)
+                    failed_ids.append(sub.id)
+            if commit:
+                self.env.cr.commit()
+
+        closed = self._close_expired_subscriptions(today)
+        if commit:
+            self.env.cr.commit()
+        _logger.info(
+            "Subscription billing: %d invoices created, %d skipped/failed, %d closed",
+            len(created), len(failed_ids), len(closed),
+        )
+        return created
+
+    @api.model
+    def _cron_run_billing(self):
+        return self._run_billing(commit=True)
+
+    def action_generate_invoices_now(self):
+        """Manual trigger for one subscription (button for staff)."""
+        invoices = self.env["account.move"]
+        today = fields.Date.context_today(self)
+        for sub in self:
+            sub._ensure_state(["active"])
+            invoices |= sub._generate_due_invoices(today)
+        if not invoices:
+            raise UserError(self.env._("Nothing is due for billing yet."))
+        return self.action_view_invoices() if len(self) == 1 else True
