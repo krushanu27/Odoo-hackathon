@@ -170,7 +170,7 @@
                             <div class="bl_portal_label">Next invoice</div>
                             <div class="fs-5 fw-semibold">
                                 <span t-if="sub.state == 'active' and sub.next_invoice_date" t-field="sub.next_invoice_date"/>
-                                <span t-else="" class="text-muted">â€”</span>
+                                <span t-else="" class="text-muted">—</span>
                             </div>
                         </div></div>
                     </div>
@@ -199,21 +199,20 @@
                         <tr t-foreach="sub.line_ids" t-as="line">
                             <td t-out="line.name"/>
                             <td class="text-end" t-out="line.quantity"/>
-                            <td class="text-end" t-out="line.price_unit"
-                                t-options="{'widget': 'monetary', 'display_currency': sub.currency_id}"/>
-                            <td class="text-end" t-field="line.price_subtotal"/>
+                            <td class="text-end"><span t-out="line.price_unit" t-options="{'widget': 'monetary', 'display_currency': sub.currency_id}"/></td>
+                            <td class="text-end"><span t-field="line.price_subtotal"/></td>
                         </tr>
                         <tr>
                             <td colspan="3" class="text-end text-muted">Untaxed</td>
-                            <td class="text-end" t-field="sub.amount_untaxed"/>
+                            <td class="text-end"><span t-field="sub.amount_untaxed"/></td>
                         </tr>
                         <tr>
                             <td colspan="3" class="text-end text-muted">Taxes</td>
-                            <td class="text-end" t-field="sub.amount_tax"/>
+                            <td class="text-end"><span t-field="sub.amount_tax"/></td>
                         </tr>
                         <tr>
                             <td colspan="3" class="text-end fw-bold">Total</td>
-                            <td class="text-end fw-bold" t-field="sub.amount_total"/>
+                            <td class="text-end fw-bold"><span t-field="sub.amount_total"/></td>
                         </tr>
                     </tbody>
                 </t>
@@ -234,10 +233,10 @@
                     <tbody>
                         <tr t-foreach="invoices" t-as="inv">
                             <td><a t-att-href="inv.get_portal_url()" class="font-monospace" t-out="inv.name"/></td>
-                            <td t-field="inv.invoice_date"/>
-                            <td t-field="inv.invoice_date_due"/>
-                            <td class="text-end" t-field="inv.amount_total"/>
-                            <td class="text-end fw-semibold" t-field="inv.amount_residual"/>
+                            <td><span t-field="inv.invoice_date"/></td>
+                            <td><span t-field="inv.invoice_date_due"/></td>
+                            <td class="text-end"><span t-field="inv.amount_total"/></td>
+                            <td class="text-end fw-semibold"><span t-field="inv.amount_residual"/></td>
                             <td>
                                 <span t-if="inv.payment_state in ('paid', 'in_payment')" class="badge rounded-pill text-bg-success">Paid</span>
                                 <span t-elif="inv.invoice_date_due and inv.invoice_date_due &lt; today" class="badge rounded-pill text-bg-danger">Overdue</span>
