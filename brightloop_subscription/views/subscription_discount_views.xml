@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Minimal screens by Person A so the feature is testable; Person B owns polish. -->
+    <record id="subscription_discount_view_list" model="ir.ui.view">
+        <field name="name">subscription.discount.list</field>
+        <field name="model">subscription.discount</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="discount_type"/>
+                <field name="value"/>
+                <field name="applies_to"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="max_uses"/>
+                <field name="used_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="subscription_discount_view_form" model="ir.ui.view">
+        <field name="name">subscription.discount.form</field>
+        <field name="model">subscription.discount</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Volume discount 10%"/></h1>
+                    </div>
+                    <group>
+                        <group string="Discount">
+                            <field name="discount_type" widget="radio"/>
+                            <field name="value"/>
+                            <field name="applies_to" widget="radio"/>
+                            <field name="product_ids" widget="many2many_tags"
+                                   invisible="applies_to != 'products'"
+                                   required="applies_to == 'products'"/>
+                        </group>
+                        <group string="Conditions">
+                            <field name="min_amount"/>
+                            <field name="min_quantity"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="max_uses"/>
+                            <field name="used_count"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="subscription_discount_action" model="ir.actions.act_window">
+        <field name="name">Discounts</field>
+        <field name="res_model">subscription.discount</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a discount rule</p>
+            <p>Eligible invoices get it automatically until it expires or runs out.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_subscription_discount"
+              name="Discounts"
+              parent="menu_subscription_config"
+              action="subscription_discount_action"
+              sequence="30"/>
+</odoo>

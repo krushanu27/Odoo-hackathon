@@ -57,6 +57,11 @@ class Subscription(models.Model):
     next_invoice_date = fields.Date(index=True, copy=False, tracking=True)
 
     payment_term_id = fields.Many2one("account.payment.term", string="Payment Terms")
+    template_id = fields.Many2one("subscription.template", string="Quotation Template")
+    validity_date = fields.Date(
+        string="Quotation Valid Until", copy=False,
+        help="After this date the quotation can no longer be confirmed.",
+    )
     note = fields.Html(string="Terms and Conditions")
 
     # --- Lines and totals ---------------------------------------------------
@@ -142,12 +147,46 @@ class Subscription(models.Model):
                 vals.update(subscription_id=sub.id, quantity=sub.plan_id.min_quantity)
                 self.env["subscription.line"].create(vals)
 
+    def _template_values(self):
+        """Plan, product lines, terms and validity taken from the template."""
+        self.ensure_one()
+        tmpl = self.template_id
+        today = fields.Date.context_today(self)
+        lines = []
+        for tl in tmpl.line_ids:
+            company = self.company_id or self.env.company
+            lines.append(Command.create({
+                "sequence": tl.sequence,
+                "product_id": tl.product_id.id,
+                "name": tl.name or tl.product_id.display_name,
+                "quantity": tl.quantity,
+                "price_unit": tl.product_id.lst_price,
+                "tax_ids": [Command.set(tl.product_id.taxes_id.filtered(lambda t: t.company_id == company).ids)],
+            }))
+        vals = {
+            "plan_id": tmpl.plan_id.id,
+            "validity_date": today + relativedelta(days=tmpl.validity_days),
+            "line_ids": [Command.clear()] + lines,
+        }
+        if tmpl.note:
+            vals["note"] = tmpl.note
+        return vals
+
+    @api.onchange("template_id")
+    def _onchange_template_id(self):
+        if not self.template_id:
+            return
+        self.update(self._template_values())
+        self._onchange_plan_id()
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get("name", "New") == "New":
                 vals["name"] = self.env["ir.sequence"].next_by_code("subscription.subscription") or "New"
         subs = super().create(vals_list)
+        for sub in subs.filtered(lambda s: s.template_id and not s.line_ids):
+            sub.write(sub._template_values())
         subs._sync_plan_line()
         return subs
 
@@ -192,6 +231,13 @@ class Subscription(models.Model):
 
     def action_confirm(self):
         self._ensure_state(["draft", "quotation"])
+        today = fields.Date.context_today(self)
+        for sub in self:
+            if sub.validity_date and sub.validity_date < today:
+                raise UserError(
+                    self.env._("Quotation %(number)s expired on %(date)s.",
+                               number=sub.name, date=sub.validity_date)
+                )
         self._validate_for_confirmation()
         self.write({"state": "confirmed"})
 
@@ -325,7 +371,7 @@ class Subscription(models.Model):
         Extension point: discounts add their lines here."""
         self.ensure_one()
         period_label = f"{fields.Date.to_string(period_start)} to {fields.Date.to_string(period_end)}"
-        return [
+        vals_list = [
             {
                 "product_id": line.product_id.id or False,
                 "name": f"{line.name} ({period_label})",
@@ -335,6 +381,8 @@ class Subscription(models.Model):
             }
             for line in self.line_ids.sorted("sequence")
         ]
+        vals_list += self.env["subscription.discount"]._get_invoice_discount_line_vals(self, period_start)
+        return vals_list
 
     def _prepare_invoice_vals(self, period_start):
         self.ensure_one()

@@ -17,3 +17,12 @@ class AccountMove(models.Model):
         "UNIQUE(subscription_id, subscription_period_start)",
         "An invoice already exists for this subscription and billing period.",
     )
+
+
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+
+    # Which discount rule produced this line; used to count discount usage.
+    subscription_discount_id = fields.Many2one(
+        "subscription.discount", index="btree_not_null", readonly=True, copy=False, ondelete="restrict"
+    )
