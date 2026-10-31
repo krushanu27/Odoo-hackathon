@@ -1,6 +1,6 @@
 {
     "name": "Brightloop Subscriptions",
-    "version": "19.0.1.8.0",
+    "version": "19.0.1.9.0",
     "summary": "Subscription plans, recurring billing, discounts and customer portal",
     "description": """
 Subscription Management System for Brightloop Software.
@@ -40,6 +40,7 @@ Built on native Odoo Invoicing (invoices, taxes, payments) and Portal.
         "views/billing_views.xml",
         "views/portal_templates.xml",
         "views/auth_templates.xml",
+        "views/account_move_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
