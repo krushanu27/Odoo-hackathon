@@ -1,4 +1,7 @@
 import logging
+from datetime import timedelta
+
+from dateutil.relativedelta import relativedelta
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -81,6 +84,7 @@ class Subscription(models.Model):
             sub.amount_tax = sum(sub.line_ids.mapped("price_tax"))
             sub.amount_total = sum(sub.line_ids.mapped("price_total"))
 
+    @api.depends("invoice_ids")
     def _compute_invoice_count(self):
         counts = {
             sub.id: count
@@ -274,8 +278,29 @@ class Subscription(models.Model):
     #     and skipped without rolling back the others.
     # ------------------------------------------------------------------------
     def _billing_period_end(self, period_start):
+        """Start of the next billing period after `period_start`.
+
+        Periods are always counted from the subscription's start date
+        (start + k periods), never chained from the previous period, so a
+        subscription starting on the 31st bills on the 31st, or the last day
+        of shorter months, instead of drifting to the 30th, then the 28th.
+        """
         self.ensure_one()
-        return period_start + self.plan_id._get_period_delta()
+        anchor = self.date_start
+        if period_start < anchor:
+            return anchor
+        period = self.plan_id.billing_period
+        if period in ("daily", "weekly"):
+            step = 1 if period == "daily" else 7
+            k = (period_start - anchor).days // step + 1
+            return anchor + timedelta(days=step * k)
+        months = 1 if period == "monthly" else 12
+        k = ((period_start.year - anchor.year) * 12 + period_start.month - anchor.month) // months
+        candidate = anchor + relativedelta(months=months * k)
+        while candidate <= period_start:
+            k += 1
+            candidate = anchor + relativedelta(months=months * k)
+        return candidate
 
     def _prepare_invoice_line_vals(self, period_start, period_end):
         """One invoice line per subscription line.
