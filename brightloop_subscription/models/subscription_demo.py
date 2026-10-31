@@ -146,6 +146,13 @@ class SubscriptionDemoLoader(models.AbstractModel):
             list=t_list * 1000, search=t_search * 1000, dash=t_dash * 1000,
         )
         _logger.info("Load test: %s", message)
+        # Keep a permanent record in Discuss (#general) as well as the pop-up.
+        channel = self.env.ref("mail.channel_all_employees", raise_if_not_found=False)
+        if channel:
+            channel.sudo().message_post(
+                body=self.env._("Performance test result: %s", message),
+                message_type="comment", subtype_xmlid="mail.mt_comment",
+            )
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
