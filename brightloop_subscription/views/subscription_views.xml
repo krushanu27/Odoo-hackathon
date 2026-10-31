@@ -99,9 +99,7 @@
                     <field name="plan_allow_renew" invisible="1"/>
                     <group>
                         <group string="Customer &amp; Plan">
-                            <field name="partner_id" readonly="state not in ('draft', 'quotation')"
-                                   widget="res_partner_many2one" context="{'show_address': 1}"
-                                   options="{'always_reload': True}"/>
+                            <field name="partner_id" readonly="state not in ('draft', 'quotation')"/>
                             <field name="plan_id" readonly="state not in ('draft', 'quotation')"/>
                             <field name="payment_term_id"/>
                             <field name="user_id" widget="many2one_avatar_user"/>

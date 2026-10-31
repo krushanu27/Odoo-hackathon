@@ -32,7 +32,7 @@
     <!-- List of the customer's subscriptions. -->
     <template id="portal_my_subscriptions" name="My Subscriptions">
         <t t-call="portal.portal_layout">
-            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <t t-set="no_breadcrumbs" t-value="True"/>
             <div class="bl_portal">
                 <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mt-4 mb-3">
                     <div>
@@ -105,7 +105,7 @@
     <!-- One subscription: details, lines, invoices and permitted actions. -->
     <template id="portal_my_subscription" name="My Subscription">
         <t t-call="portal.portal_layout">
-            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <t t-set="no_breadcrumbs" t-value="True"/>
             <t t-set="sub" t-value="subscription"/>
             <div class="bl_portal mt-4">
                 <nav aria-label="breadcrumb">
@@ -170,7 +170,7 @@
                             <div class="bl_portal_label">Next invoice</div>
                             <div class="fs-5 fw-semibold">
                                 <span t-if="sub.state == 'active' and sub.next_invoice_date" t-field="sub.next_invoice_date"/>
-                                <span t-else="" class="text-muted">—</span>
+                                <span t-else="" class="text-muted">â€”</span>
                             </div>
                         </div></div>
                     </div>
