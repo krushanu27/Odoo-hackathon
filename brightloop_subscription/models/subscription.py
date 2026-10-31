@@ -4,7 +4,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 from odoo import Command, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -252,6 +252,24 @@ class Subscription(models.Model):
     def action_reset_to_draft(self):
         self._ensure_state(["quotation"])
         self.write({"state": "draft"})
+
+    # Actions a customer may trigger from the portal.
+    PORTAL_ACTIONS = {"pause", "resume", "close", "renew"}
+
+    def action_portal_request(self, action):
+        """Entry point for portal buttons.
+
+        Customers have read-only access. This method first proves the current
+        user can see this subscription (record rules), then performs the action
+        with elevated rights. The action method itself still enforces the plan's
+        rules (pause allowed? early close allowed?), so the portal cannot do
+        anything the backend would refuse."""
+        self.ensure_one()
+        if action not in self.PORTAL_ACTIONS:
+            raise AccessError(self.env._("Action not allowed from the portal."))
+        self.check_access("read")
+        getattr(self.sudo(), f"action_{action}")()
+        return True
 
     def action_view_invoices(self):
         self.ensure_one()

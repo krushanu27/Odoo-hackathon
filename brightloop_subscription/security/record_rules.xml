@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Customers (portal users) see only subscriptions belonging to their own
+        company/contact tree. "child_of commercial partner" lets every contact
+        of a customer company see that company's subscriptions, and nothing else.
+        Invoices are already restricted the same way by Odoo's own portal rules.
+    -->
+    <record id="rule_subscription_portal" model="ir.rule">
+        <field name="name">Subscription: portal users see their own</field>
+        <field name="model_id" ref="model_subscription_subscription"/>
+        <field name="domain_force">[('partner_id', 'child_of', [user.commercial_partner_id.id])]</field>
+        <field name="groups" eval="[Command.link(ref('base.group_portal'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_subscription_line_portal" model="ir.rule">
+        <field name="name">Subscription line: portal users see their own</field>
+        <field name="model_id" ref="model_subscription_line"/>
+        <field name="domain_force">[('subscription_id.partner_id', 'child_of', [user.commercial_partner_id.id])]</field>
+        <field name="groups" eval="[Command.link(ref('base.group_portal'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

@@ -54,7 +54,10 @@ methods**; the model decides whether the action is allowed.
 | UI action | Calls (Person A provides) |
 |---|---|
 | Send quotation / Confirm / Activate | `action_send_quotation()`, `action_confirm()`, `action_activate()` |
-| Pause / Resume / Close / Renew (backend or portal) | `action_pause()`, `action_resume()`, `action_close()`, `action_renew()` |
+| Pause / Resume / Close / Renew (backend form buttons) | `action_pause()`, `action_resume()`, `action_close()`, `action_renew()` |
+| Pause / Resume / Close / Renew (**customer portal**) | `sub.action_portal_request("pause" / "resume" / "close" / "renew")` (customers are read-only; this checks access and plan rules) |
+| Portal list of a customer's subscriptions | `request.env["subscription.subscription"].search([])`, no `sudo()`; record rules limit it to the customer |
+| Generate invoice now (backend button) | `action_generate_invoices_now()` |
 | Show/hide Pause, Close, Renew | fields `plan_allow_pause`, `plan_allow_close`, `plan_allow_renew` |
 | Invoices smart button | `action_view_invoices()`, field `invoice_count` |
 | Dashboard tiles | `subscription.dashboard.get_dashboard_data(filters)` *(coming)* |
