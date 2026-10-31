@@ -1,54 +1,309 @@
-// Customer portal and signup styling. Tokens follow DESIGN.md.
-$bl-primary: #2563EB;
-$bl-muted: #475569;
-$bl-border: #E2E8F0;
-$bl-success: #047857;
+// Customer portal, sign in and signup. Tokens come from tokens.scss (DESIGN.md §2).
 
-.bl_portal {
-    .bl_portal_card {
-        border: 1px solid $bl-border;
-        border-radius: 14px;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
-        transition: box-shadow 150ms;
+// Frontend basics: type, primary action and fields on every public page
+body {
+    font-family: $bl-font;
+    -webkit-font-smoothing: antialiased;
+}
+#wrapwrap {
+    color: $bl-ink;
 
-        &:hover,
-        &:focus-visible {
-            box-shadow: 0 4px 12px rgba(15, 23, 42, .1);
+    > header .navbar {
+        background: $bl-surface !important;
+        border-bottom: 1px solid $bl-line;
+    }
+
+    .btn {
+        border-radius: $bl-radius-md;
+        font-weight: 500;
+    }
+    .btn-primary {
+        --bs-btn-bg: #{$bl-ink};
+        --bs-btn-border-color: #{$bl-ink};
+        --bs-btn-hover-bg: #{$bl-ink-700};
+        --bs-btn-hover-border-color: #{$bl-ink-700};
+        --bs-btn-active-bg: #{$bl-ink-700};
+        --bs-btn-active-border-color: #{$bl-ink-700};
+        --bs-btn-disabled-bg: #{$bl-ink};
+        --bs-btn-disabled-border-color: #{$bl-ink};
+        --bs-btn-color: #fff;
+        --bs-btn-hover-color: #fff;
+        background-color: var(--bs-btn-bg);
+        border-color: var(--bs-btn-border-color);
+        color: var(--bs-btn-color);
+
+        &:hover {
+            background-color: var(--bs-btn-hover-bg);
+            border-color: var(--bs-btn-hover-border-color);
         }
     }
-    .card {
-        border-radius: 14px;
-        border-color: $bl-border;
+    .form-control,
+    .form-select {
+        min-height: 44px;
+        border-color: $bl-line;
+        border-radius: $bl-radius-md;
+        color: $bl-ink;
+
+        &::placeholder { color: $bl-subtle; }
+        &:focus {
+            border-color: $bl-brand;
+            box-shadow: 0 0 0 3px $bl-brand-50;
+        }
     }
-    .bl_portal_price {
-        font-size: 1.75rem;
-        line-height: 1.2;
-        font-weight: 700;
-        letter-spacing: -.02em;
-        font-variant-numeric: tabular-nums;
+    .form-check-input:checked {
+        background-color: $bl-brand;
+        border-color: $bl-brand;
     }
-    .bl_portal_label {
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+    .form-label,
+    .col-form-label {
         color: $bl-muted;
-        margin-bottom: 4px;
-    }
-    .bl_portal_badge {
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 400;
     }
 }
 
+// Sign in, signup and reset: a white card on the gray canvas
+.oe_login_form,
+.oe_signup_form,
+.oe_reset_password_form {
+    padding: 28px;
+    background: $bl-surface;
+    border-radius: $bl-radius-lg;
+    box-shadow: $bl-shadow-md;
+
+    .btn-primary {
+        min-height: 44px;
+    }
+    a:not(.btn) {
+        color: $bl-brand-700;
+    }
+}
+
+.bl_portal {
+    color: $bl-ink;
+
+    h2 {
+        font-weight: 500 !important;
+        letter-spacing: -.01em;
+    }
+    h3,
+    .h5 {
+        font-weight: 500 !important;
+    }
+
+    .breadcrumb {
+        --bs-breadcrumb-divider-color: #{$bl-subtle};
+
+        a { color: $bl-muted; text-decoration: none; }
+        a:hover { color: $bl-ink; }
+        .active { color: $bl-ink; }
+    }
+
+    // Cards: white, borderless, rounded, soft lift on hover
+    .card {
+        border: 0;
+        border-radius: $bl-radius-lg;
+        background: $bl-surface;
+        box-shadow: $bl-shadow-sm, 0 0 0 1px $bl-line;
+    }
+    .card-body {
+        padding: 22px 24px;
+    }
+    .bl_portal_card {
+        transition: box-shadow 150ms $bl-ease, transform 150ms $bl-ease;
+
+        &:hover,
+        &:focus-visible {
+            box-shadow: $bl-shadow-md, 0 0 0 1px $bl-line;
+            transform: translateY(-1px);
+        }
+        .card-body > div:last-child {
+            padding-top: 14px;
+            border-top: 1px dashed $bl-line;
+        }
+    }
+    .card.border-success {
+        box-shadow: 0 0 0 2px $bl-brand;
+    }
+
+    // Prices read like the fares in the reference: large, medium weight, brand
+    .bl_portal_price {
+        font-size: 2rem;
+        line-height: 1.15;
+        font-weight: 500;
+        letter-spacing: -.02em;
+        color: $bl-brand;
+        font-variant-numeric: tabular-nums;
+    }
+    .bl_portal_label {
+        font-size: 13px;
+        font-weight: 400;
+        color: $bl-muted;
+        margin-bottom: 6px;
+    }
+    .fs-5.fw-semibold,
+    .fw-semibold {
+        font-weight: 500 !important;
+    }
+    .font-monospace {
+        font-family: $bl-font !important;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: .01em;
+    }
+
+    // Status tags: small rounded rectangles with solid fills
+    .badge {
+        padding: 5px 10px;
+        border-radius: 8px !important;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+    .text-bg-success { background-color: $bl-brand !important; color: #fff !important; }
+    .text-bg-primary { background-color: $bl-ink !important; color: #fff !important; }
+    .text-bg-info { background-color: $bl-brand-50 !important; color: $bl-brand-700 !important; }
+    .text-bg-warning { background-color: $bl-warning-bg !important; color: $bl-warning !important; }
+    .text-bg-danger { background-color: $bl-orange !important; color: #fff !important; }
+    .text-bg-secondary,
+    .text-bg-light { background-color: $bl-canvas !important; color: $bl-ink !important; }
+
+    // Buttons
+    .btn-outline-secondary,
+    .btn-light {
+        --bs-btn-bg: #{$bl-surface-2};
+        --bs-btn-border-color: #{$bl-surface-2};
+        --bs-btn-color: #{$bl-ink};
+        --bs-btn-hover-bg: #{$bl-line};
+        --bs-btn-hover-border-color: #{$bl-line};
+        --bs-btn-hover-color: #{$bl-ink};
+        --bs-btn-active-bg: #{$bl-line};
+        --bs-btn-active-border-color: #{$bl-line};
+        --bs-btn-active-color: #{$bl-ink};
+    }
+    .btn-outline-primary {
+        --bs-btn-color: #{$bl-brand-700};
+        --bs-btn-border-color: #{$bl-brand};
+        --bs-btn-hover-bg: #{$bl-brand};
+        --bs-btn-hover-border-color: #{$bl-brand};
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-bg: #{$bl-brand-600};
+        --bs-btn-active-border-color: #{$bl-brand-600};
+    }
+    .btn-outline-danger {
+        --bs-btn-color: #{$bl-danger};
+        --bs-btn-border-color: #{$bl-danger};
+        --bs-btn-hover-bg: #{$bl-orange};
+        --bs-btn-hover-border-color: #{$bl-orange};
+        --bs-btn-hover-color: #fff;
+    }
+    .btn-danger {
+        --bs-btn-bg: #{$bl-orange};
+        --bs-btn-border-color: #{$bl-orange};
+        --bs-btn-hover-bg: #{$bl-danger};
+        --bs-btn-hover-border-color: #{$bl-danger};
+    }
+    form .btn:not(.btn-sm) {
+        min-height: 44px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    // Sort control: a segmented pill group, selected option in brand
+    .btn-group {
+        padding: 4px;
+        gap: 4px;
+        background: $bl-surface;
+        border-radius: $bl-radius-md;
+        box-shadow: 0 0 0 1px $bl-line;
+
+        > .btn {
+            border: 0;
+            border-radius: $bl-radius-sm !important;
+        }
+        > .btn-outline-secondary {
+            --bs-btn-bg: transparent;
+            --bs-btn-color: #{$bl-muted};
+        }
+        // #wrapwrap prefix outranks the site-wide ink primary button
+        #wrapwrap & > .btn-primary {
+            --bs-btn-bg: #{$bl-brand};
+            --bs-btn-border-color: #{$bl-brand};
+            --bs-btn-hover-bg: #{$bl-brand-600};
+            --bs-btn-hover-border-color: #{$bl-brand-600};
+        }
+    }
+
+    // Tables: a white rounded panel with light dividers
+    .table-responsive {
+        border: 0 !important;
+        border-radius: $bl-radius-lg !important;
+        background: $bl-surface;
+        box-shadow: $bl-shadow-sm, 0 0 0 1px $bl-line;
+    }
+    .table {
+        --bs-table-bg: transparent;
+        margin-bottom: 0;
+        font-variant-numeric: tabular-nums;
+
+        thead th {
+            background: $bl-surface;
+            color: $bl-muted;
+            font-size: 13px;
+            font-weight: 400;
+            border-bottom: 1px solid $bl-line;
+            padding: 14px 20px;
+        }
+        tbody td {
+            padding: 14px 20px;
+            border-bottom: 1px dashed $bl-line;
+            vertical-align: middle;
+        }
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr:hover td { background: #F7F8FA; }
+        a { color: $bl-brand-700; text-decoration: none; font-weight: 500; }
+    }
+
+    // Empty states and notices
+    .alert-light {
+        border: 0 !important;
+        border-radius: $bl-radius-lg;
+        background: $bl-surface;
+        box-shadow: 0 0 0 1px $bl-line;
+        color: $bl-ink;
+    }
+    .alert-success,
+    .alert-danger {
+        border: 0;
+        border-radius: $bl-radius-md;
+    }
+    .alert-success { background: $bl-brand-50; color: $bl-brand-700; }
+    .alert-danger { background: $bl-danger-bg; color: $bl-danger; }
+
+    .modal-content {
+        border: 0;
+        border-radius: $bl-radius-lg;
+        box-shadow: $bl-shadow-lg;
+    }
+    .modal-header,
+    .modal-footer {
+        border-color: $bl-line;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bl_portal_card:hover { transform: none; }
+    }
+}
+
+// Live password checklist under the password field
 .bl_password_rules {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px 12px;
-    margin: 8px 0 0;
-    padding: 10px 12px;
-    background: #F8FAFC;
-    border: 1px solid $bl-border;
-    border-radius: 10px;
+    gap: 8px 12px;
+    margin: 10px 0 0;
+    padding: 12px 14px;
+    background: $bl-surface-2;
+    border: 0;
+    border-radius: $bl-radius-md;
     font-size: 13px;
 
     li {
@@ -56,23 +311,24 @@ $bl-success: #047857;
         align-items: center;
         gap: 8px;
         color: $bl-muted;
+        transition: color 150ms $bl-ease;
 
         &::before {
             content: "";
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid #CBD5E1;
+            width: 16px;
+            height: 16px;
+            border-radius: 5px;
+            border: 1.5px solid #C3C8D0;
+            background: $bl-surface;
             flex-shrink: 0;
         }
 
         &.bl_ok {
-            color: $bl-success;
+            color: $bl-ink;
 
             &::before {
-                border-color: $bl-success;
-                background: $bl-success;
-                box-shadow: inset 0 0 0 2px #fff;
+                border-color: $bl-brand;
+                background: $bl-brand url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 10px no-repeat;
             }
         }
     }

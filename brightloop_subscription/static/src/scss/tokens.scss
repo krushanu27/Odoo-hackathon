@@ -1,0 +1,36 @@
+// Design tokens shared by the backend and frontend bundles. See DESIGN.md §2.
+// Palette: ink #181D2A, periwinkle #748EFE, canvas #E8EBED, white.
+
+$bl-font: "Google Sans", "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+$bl-ink: #181D2A;            // text, primary buttons
+$bl-ink-700: #2B3244;        // primary button hover
+$bl-brand: #748EFE;          // fills, selected state, charts, large prices
+$bl-brand-600: #5F7AF7;      // brand fill hover
+$bl-brand-700: #4A62E0;      // small brand text and links on white (AA)
+$bl-brand-100: #DCE3FF;
+$bl-brand-50: #EEF1FF;
+$bl-canvas: #E8EBED;         // app background
+$bl-surface: #FFFFFF;        // cards
+$bl-surface-2: #F3F4F6;      // inset panels, chips, table header
+$bl-line: #E3E6EA;           // borders, dividers
+$bl-muted: #697080;          // secondary text (AA on white)
+$bl-subtle: #9AA0AC;         // placeholders, axis labels
+
+$bl-orange: #E8490F;         // alert fill (overdue), like the "Cheapest" tag
+$bl-danger: #C2410C;         // alert text on white
+$bl-danger-bg: #FFF1EA;
+$bl-warning: #A15C07;
+$bl-warning-bg: #FFF6E5;
+$bl-warning-fill: #F5A524;
+$bl-success: #157F55;
+$bl-success-bg: #E8F7EF;
+
+$bl-radius-sm: 10px;         // inputs, small buttons, tags
+$bl-radius-md: 12px;         // buttons, dropdowns
+$bl-radius-lg: 20px;         // cards
+$bl-radius-xl: 24px;         // page panels
+$bl-shadow-sm: 0 1px 2px rgba(24, 29, 42, .04);
+$bl-shadow-md: 0 8px 24px rgba(24, 29, 42, .08);
+$bl-shadow-lg: 0 24px 48px rgba(24, 29, 42, .16);
+$bl-ease: cubic-bezier(.2, .8, .2, 1);

@@ -2,7 +2,7 @@
 
 The visual and interaction design spec for the Brightloop subscription platform. Use it as the reference for every screen, component and style decision.
 
-**Visual direction:** inspired by modern enterprise finance software such as zuora.com: deep navy surfaces, one confident accent color, large, calm headlines, generous whitespace, oversized metric numerals and clean data tables. We borrow the *feel*, not the brand. Do not reuse Zuora's logo, name, copy, illustrations or exact colors.
+**Visual direction:** soft, modern booking-app style. White rounded cards float on a cool light-gray canvas (`#E8EBED`). Text and the main action button are near-black ink (`#181D2A`). One periwinkle accent (`#748EFE`) marks selection, prices and charts, and a warm orange is kept for alerts. Type is Google Sans. Large numerals use medium weight, not bold. Tags are small solid rounded rectangles, and gray inset chips hold secondary facts. Use little chrome: no heavy borders, only faint shadows and dashed dividers.
 
 ---
 
@@ -27,53 +27,51 @@ Define all tokens as CSS custom properties on `:root`. Components never use raw 
 
 | Token | Hex | Use |
 |---|---|---|
-| `--color-navy-950` | `#0A1628` | Sidebar, auth-page brand panel, landing hero |
-| `--color-navy-900` | `#10213A` | Sidebar hover, dark cards |
-| `--color-navy-800` | `#1B3155` | Dark-surface borders, active nav item |
-| `--color-primary-600` | `#2563EB` | Primary buttons, links, focus ring |
-| `--color-primary-700` | `#1D4ED8` | Primary hover |
-| `--color-primary-50` | `#EFF4FF` | Selected rows, active tab background |
-| `--color-accent-500` | `#14C8A0` | Highlight on dark surfaces (metric glow, chart series 1, hero accent word) |
-| `--color-gray-900` | `#0F172A` | Primary text |
-| `--color-gray-600` | `#475569` | Secondary text, table headers |
-| `--color-gray-400` | `#94A3B8` | Placeholder, disabled text |
-| `--color-gray-200` | `#E2E8F0` | Borders, dividers |
-| `--color-gray-100` | `#F1F5F9` | Table header background, input fill |
-| `--color-gray-50` | `#F8FAFC` | App background |
-| `--color-white` | `#FFFFFF` | Cards, modals, inputs |
+| `--color-ink` | `#181D2A` | Primary text, primary buttons, auth brand panel, toasts |
+| `--color-ink-700` | `#2B3244` | Primary button hover |
+| `--color-brand` | `#748EFE` | Selected tab/segment, active nav item, checkboxes, prices, chart series 1, "Active" tag |
+| `--color-brand-600` | `#5F7AF7` | Brand fill hover |
+| `--color-brand-700` | `#4A62E0` | Links and IDs on white (small text) |
+| `--color-brand-50` | `#EEF1FF` | Selected rows, focus ring, info tags |
+| `--color-canvas` | `#E8EBED` | App background, neutral tags |
+| `--color-surface` | `#FFFFFF` | Cards, modals, inputs |
+| `--color-surface-2` | `#F3F4F6` | Inset chips, secondary buttons, stat tiles |
+| `--color-line` | `#E3E6EA` | Borders, dividers (dashed between rows) |
+| `--color-muted` | `#697080` | Secondary text, labels, table headers |
+| `--color-subtle` | `#9AA0AC` | Placeholder, axis labels |
+| `--color-orange` | `#E8490F` | Alert fill (Overdue tag), like a "Cheapest" tag |
 
 #### Semantic
 
 | Token | Text / icon | Background | Meaning |
 |---|---|---|---|
-| `success` | `#047857` | `#ECFDF5` | Active, Paid, Confirmed payment |
-| `warning` | `#B45309` | `#FFFBEB` | Expiring soon, Due soon, Paused |
-| `danger` | `#B91C1C` | `#FEF2F2` | Overdue, Cancelled, failed validation |
-| `info` | `#1D4ED8` | `#EFF4FF` | Quotation, Confirmed (pre-active) |
-| `neutral` | `#475569` | `#F1F5F9` | Draft, Closed |
+| `success` | `#157F55` | `#E8F7EF` | Paid counts, allowed options |
+| `warning` | `#A15C07` | `#FFF6E5` | Expiring soon, Due soon, Paused |
+| `danger` | `#C2410C` | `#FFF1EA` | Overdue text, Cancelled, failed validation |
+| `info` | `#4A62E0` | `#EEF1FF` | Quotation, Confirmed (pre-active) |
+| `neutral` | `#181D2A` | `#E8EBED` | Draft, Closed |
 
 **Rules**
-- Text on white must meet WCAG AA, 4.5:1. All text tokens above pass.
+- Text on white must meet WCAG AA, 4.5:1. All small-text tokens above pass. `--color-brand` passes only as large text (prices, metrics) or as a fill behind white 12px+ medium text in tags.
 - Never use color as the only signal. Badges always include a text label, and an icon where space allows.
-- `--color-accent-500` is for dark surfaces and charts only. Never use it for body text on white.
+- Ink is for the one primary action. Brand periwinkle marks *selection*, never a second primary button.
 
 ### 2.2 Typography
 
-- **Sans (UI + headings):** `Inter`, fallback `system-ui, -apple-system, "Segoe UI", sans-serif`
-- **Mono (IDs, invoice numbers, amounts in tables):** `JetBrains Mono`, fallback `ui-monospace, monospace`
-- Turn on tabular numbers for any numeric column with `font-variant-numeric: tabular-nums;`.
+- **One family for everything:** `Google Sans` (Google Fonts, weights 400/500/600/700), fallback `"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif`.
+- No monospace. IDs and amounts use the same family with `font-variant-numeric: tabular-nums;` so columns still align.
 
 | Token | Size / line-height | Weight | Use |
 |---|---|---|---|
-| `display` | 56 / 64 | 700 | Landing hero only |
-| `h1` | 32 / 40 | 700 | Page title |
-| `h2` | 24 / 32 | 600 | Section title, modal title |
-| `h3` | 18 / 28 | 600 | Card title |
-| `metric` | 36 / 44 | 700 | KPI numbers on dashboard |
+| `display` | 56 / 64 | 500 | Landing hero only |
+| `h1` | 28–30 / 36–38 | 500 | Page title |
+| `h2` | 24 / 32 | 500 | Section title, modal title |
+| `h3` | 18 / 26 | 500 | Card title |
+| `metric` | 40 / 48, `letter-spacing: -0.02em` | 500 | KPI numbers, prices (prices in `--color-brand`) |
 | `body` | 15 / 24 | 400 | Default text |
 | `body-sm` | 13 / 20 | 400 | Table cells, helper text |
-| `label` | 13 / 20 | 500 | Form labels, buttons |
-| `eyebrow` | 12 / 16, `letter-spacing: 0.08em`, UPPERCASE | 600 | Section kicker above headings (e.g. `BILLING`) |
+| `label` | 13 / 20 | 400, `--color-muted` | Form labels above fields |
+| `eyebrow` | 13 / 18, sentence case | 400, `--color-muted` | Small kicker above headings and metrics (e.g. "Active subscriptions") |
 
 On mobile (< 640px), scale `display` to 36/44 and `h1` to 26/34.
 
@@ -90,15 +88,17 @@ On mobile (< 640px), scale `display` to 36/44 and `h1` to 26/34.
 
 | Token | Value | Use |
 |---|---|---|
-| `--radius-sm` | `6px` | Inputs, badges, small buttons |
-| `--radius-md` | `10px` | Buttons, dropdowns |
-| `--radius-lg` | `14px` | Cards, modals |
-| `--radius-full` | `999px` | Pills, avatars |
-| `--shadow-sm` | `0 1px 2px rgba(15,23,42,.06)` | Cards at rest |
-| `--shadow-md` | `0 4px 12px rgba(15,23,42,.08)` | Dropdowns, hovered cards |
-| `--shadow-lg` | `0 16px 40px rgba(15,23,42,.16)` | Modals, drawers |
+| `--radius-sm` | `10px` | Small buttons, segments, inset chips |
+| `--radius-md` | `12px` | Buttons, inputs, dropdowns |
+| `--radius-lg` | `20px` | Cards, modals, table panels |
+| `--radius-xl` | `24px` | Page header panel |
+| `--radius-tag` | `8px` | Status tags |
+| `--radius-full` | `999px` | Avatars, icon buttons |
+| `--shadow-sm` | `0 1px 2px rgba(24,29,42,.04)` | Cards at rest |
+| `--shadow-md` | `0 8px 24px rgba(24,29,42,.08)` | Dropdowns, hovered cards (plus a 1px lift) |
+| `--shadow-lg` | `0 24px 48px rgba(24,29,42,.16)` | Modals, drawers |
 
-Cards use a `1px solid var(--color-gray-200)` border plus `--shadow-sm`. They do not use heavy shadows.
+Cards are white on the canvas with **no border** and `--shadow-sm`. Rows inside a card are separated by `1px dashed var(--color-line)`.
 
 ### 2.5 Motion
 
@@ -132,7 +132,7 @@ Content max-width is `1280px`. Forms max out at `720px`.
 │  LOGO      │  Top bar: page title · global search · 🔔 · avatar │
 │            ├──────────────────────────────────────────────┤
 │  Dashboard │                                              │
-│  Subscript.│   Page content (gray-50 background)          │
+│  Subscript.│   Page content (canvas background)           │
 │  Invoices  │   ┌ Page header: h1 + primary action ┐      │
 │  Payments  │   │ Filters bar                       │      │
 │  Customers │   │ Table / cards                     │      │
@@ -146,17 +146,18 @@ Content max-width is `1280px`. Forms max out at `720px`.
 └────────────┴──────────────────────────────────────────────┘
 ```
 
-- **Sidebar:** 248px wide on `navy-950`, white nav text at 72% opacity. The active item uses full opacity, a `navy-800` background and a 3px `accent-500` left bar. Below `lg` it collapses to a 64px icon-only rail, and below `md` it becomes an off-canvas drawer.
+- **Sidebar:** 248px wide, white with a `line` right border, `muted` nav text. The active item is a `brand` filled rounded item (12px) with white text and icon. Below `lg` it collapses to a 64px icon-only rail, and below `md` it becomes an off-canvas drawer.
 - **Group labels:** "Operations" covers Dashboard through Customers. "Catalog & Rules" covers Products through Taxes. "Settings" holds Users.
-- **Top bar:** 64px tall on a white background with a bottom border.
+- **Top bar:** 72px tall on a white background with a bottom border. In Odoo, the main navbar is white with ink text, and the open menu gets a 2px `brand` underline.
+- **Page content** sits on the `canvas` gray; the page header is itself a white rounded panel.
 
 ### 3.3 Customer portal shell
 
-There is no sidebar. Use a white top navigation bar with the logo and the links **My Subscriptions**, **Invoices**, **Payments** and **Profile**, plus an avatar menu. Content is centered at a 1080px max width. The portal should feel lighter and simpler than the internal app.
+There is no sidebar. Use a white top navigation bar with the logo and the links **My Subscriptions**, **Invoices**, **Payments** and **Profile**, plus an avatar menu. The current link is ink text with a 2px `brand` underline. Content is centered at a 1080px max width. The portal should feel lighter and simpler than the internal app.
 
 ### 3.4 Auth shell
 
-The layout is a split screen. The left 45% is a `navy-950` brand panel with the logo, a one-line value proposition, and a subtle accent gradient blob. The right side holds a white form panel with a 400px-wide form. Below `md` the brand panel is hidden.
+The layout is a split screen. The left 45% is an `ink` brand panel with the logo, a one-line value proposition, and a soft periwinkle gradient blob. The right side holds a white form panel with a 400px-wide form. Below `md` the brand panel is hidden.
 
 ---
 
@@ -166,40 +167,43 @@ The layout is a split screen. The left 45% is a `navy-950` brand panel with the 
 
 | Variant | Style |
 |---|---|
-| Primary | `primary-600` background, white text; hover `primary-700` |
-| Secondary | White background, `gray-200` border, `gray-900` text; hover `gray-50` |
-| Ghost | Transparent, `gray-600` text; hover `gray-100` |
-| Danger | `danger` text color as background, white text; used only in confirm dialogs |
-| On-dark | White background, `navy-950` text; used on the landing page and auth brand panel |
+| Primary | `ink` background, white text; hover `ink-700` (like a "Select" button) |
+| Secondary | `surface-2` gray fill, no border, `ink` text; hover `line` |
+| Outline | White background, `brand` border, `brand-700` text; hover fills `brand` with white text |
+| Ghost | Transparent, `muted` text; hover `surface-2` |
+| Danger | `orange` background, white text; used only in confirm dialogs |
+| On-dark | White background, `ink` text; used on the landing page and auth brand panel |
 
-- Sizes: `sm` 32px, `md` 40px (default), `lg` 48px. Use 16px horizontal padding and `--radius-md`.
+- Sizes: `sm` 32px, `md` 44px (default), `lg` 48px. Use 20px horizontal padding and `--radius-md`. Icon-only buttons are 44px circles.
+- Segmented controls (date range, sort) sit on a `surface-2` track; the selected segment is filled `brand` with white text.
 - Loading state: replace the label with a spinner and keep the button width so the layout doesn't jump.
-- Focus: `outline: 2px solid var(--color-primary-600); outline-offset: 2px;`.
+- Focus: `outline: 2px solid var(--color-brand); outline-offset: 2px;`.
 
 ### 4.2 Status badges
 
-Badges are pill-shaped (`--radius-full`), use `body-sm` at weight 500, have a 6px dot on the left, and use the semantic background and text colors.
+Badges are small rounded rectangles (`--radius-tag` 8px, padding 4px 10px), 12px at weight 500, with no dot. They come in solid and tonal styles.
 
 **Subscription states**
 
-| State | Tone |
+| State | Style |
 |---|---|
-| Draft | neutral |
-| Quotation | info |
-| Confirmed | info |
-| Active | success |
-| Paused | warning |
-| Closed | neutral (dot hollow) |
+| Draft | `canvas` fill, `ink` text |
+| Quotation | `brand-50` fill, `brand-700` text |
+| Confirmed | `ink` fill, white text |
+| Active | `brand` fill, white text |
+| Paused | `warning` tonal |
+| Closed | `canvas` fill, `ink` text |
 
 **Invoice states**
 
-| State | Tone |
+| State | Style |
 |---|---|
-| Draft | neutral |
-| Confirmed | info |
-| Paid | success |
-| Overdue *(derived: Confirmed + past due date)* | danger |
-| Cancelled | danger (strikethrough-free, dot hollow) |
+| Draft | `canvas` fill, `ink` text |
+| Confirmed / Due | `brand-50` fill, `brand-700` text |
+| Paid | `brand` fill, white text |
+| Partially paid | `warning` tonal |
+| Overdue *(derived: Confirmed + past due date)* | `orange` fill, white text |
+| Cancelled | `canvas` fill, `muted` text |
 
 ### 4.3 Lifecycle stepper
 
@@ -209,16 +213,16 @@ Show the stepper at the top of every subscription and invoice detail page.
 ● Draft ── ● Quotation ── ◉ Confirmed ── ○ Active ── ○ Closed
 ```
 
-Completed steps are filled with `primary-600`. The current step is a ring with a bold label. Future steps are `gray-400`. Each step shows the date it was reached as a tooltip or caption. Under `md`, collapse the stepper to "Step 3 of 5 · Confirmed".
+Completed steps are filled with `brand`. The current step is a ring with a bold label. Future steps are `subtle`. Each step shows the date it was reached as a tooltip or caption. Under `md`, collapse the stepper to "Step 3 of 5 · Confirmed".
 
 ### 4.4 Data table
 
 Data tables are the most important component in the app.
 
-- **Header row:** `gray-100` background, `label` text in `gray-600`, sticky on scroll.
-- **Rows:** 52px tall (40px in compact mode), a `gray-200` bottom border, and a `gray-50` hover background. The whole row is clickable and opens the detail page.
-- **Numeric columns:** right-aligned, monospace, tabular numbers. Currency is formatted in the user's locale, for example `₹ 12,450.00`.
-- **ID columns:** monospace in `primary-600` (for example `SUB-000123` or `INV-2026-0042`).
+- **Header row:** white background with a `line` bottom border, 13px `muted` text at weight 400, sticky on scroll.
+- **Rows:** 56px tall (40px in compact mode), a dashed `line` bottom border, and a `#F7F8FA` hover background. The whole row is clickable and opens the detail page.
+- **Numeric columns:** right-aligned, tabular numbers. Currency is formatted in the user's locale, for example `₹ 12,450.00`.
+- **ID columns:** weight 500 in `brand-700`, tabular numbers (for example `SUB-000123` or `INV-2026-0042`).
 - **Selection:** a checkbox column, with a bulk-action bar that slides in above the table ("3 selected · Confirm · Send · Export").
 - **Pagination:** server-side, defaulting to 25 rows with options for 25, 50 and 100. Show "Showing 1–25 of 3,482".
 - **Loading:** show 8 skeleton rows. Never blank the table while it re-fetches. Keep the old rows at 60% opacity instead.
@@ -239,8 +243,8 @@ Active filters appear as removable chips. Sync filter state to the URL query str
 
 ```
 ┌──────────────────────────┐
-│ ACTIVE SUBSCRIPTIONS     │  ← eyebrow, gray-600
-│ 1,284                    │  ← metric, gray-900
+│ Active subscriptions   • │  ← eyebrow, muted; brand dot top-right
+│ 1,284                    │  ← metric (40px, weight 500), ink
 │ ▲ 4.2% vs last month     │  ← body-sm, success/danger
 └──────────────────────────┘
 ```
@@ -251,8 +255,8 @@ Active filters appear as removable chips. Sync filter state to the URL query str
 ### 4.7 Forms
 
 - Labels sit above fields. Required fields get a `*` in `danger`.
-- Inputs are 40px tall with a `gray-200` border and `--radius-sm`. On focus the border turns `primary-600` and gets a 3px `primary-50` ring.
-- Help text goes below the field in `body-sm` `gray-600`. Errors replace the help text in `danger` with an icon.
+- Inputs are 44px tall with a `line` border and `--radius-md`. On focus the border turns `brand` and gets a 3px `brand-50` ring.
+- Help text goes below the field in `body-sm` `muted`. Errors replace the help text in `danger` with an icon.
 - Validate on blur, then live once the user has touched a field.
 - Long forms (Product, Plan, Subscription) use titled section cards and a **sticky footer action bar** with Cancel (ghost) and Save (primary).
 - Money inputs have a currency prefix and are right-aligned. Percentage inputs have a `%` suffix.
@@ -273,10 +277,10 @@ Used on subscriptions, quotation templates and invoices.
 - **Modal:** 480px wide (720px for large modals) with `--radius-lg` and `--shadow-lg`. Use modals only for confirmations and short forms. Destructive confirms must state the consequence, for example "Cancel INV-2026-0042? This cannot be undone."
 - **Drawer:** 480px wide, slides in from the right. Use it for quick views (customer preview, payment entry) without leaving the list.
 - **Toast:** appears bottom-right and auto-dismisses after 5s. Success toasts can include an Undo action where one makes sense.
-- **Tabs:** underline style with a 2px `primary-600` active bar.
+- **Tabs:** underline style with a 2px `brand` active bar.
 - **Timeline / activity log:** a vertical line with dots, on subscription and invoice detail pages (for example "Invoice INV-…-0042 created by Billing run · 1 Nov 2026").
 - **Avatar:** initials on a deterministic pastel background.
-- **Tooltip:** `navy-950` background, white `body-sm` text, 6px radius.
+- **Tooltip:** `ink` background, white `body-sm` text, 8px radius.
 
 ---
 
@@ -298,7 +302,7 @@ Each screen maps to a scene in the problem statement.
 1. Page header: "Overview", with a date-range picker (This month / Last month / Quarter / Custom) on the right.
 2. The four KPI cards (§4.6).
 3. A row with two panels:
-   - **Revenue chart** (2/3 width): a bar chart of collected payments per month, with an outstanding-amount line overlaid. Use `accent-500` for collected and `primary-600` for outstanding.
+   - **Revenue chart** (2/3 width): a bar chart of collected payments per month, with an outstanding-amount line overlaid. Use `brand` for collected and light gray `#C9CED6` for outstanding, on a 2px `ink` baseline.
    - **Subscriptions by state** (1/3 width): a donut chart using the badge colors, with the legend as a clickable list.
 4. **Overdue invoices** table showing the top 10 sorted by days overdue, with a "Days overdue" column in `danger` and a "Record payment" action per row.
 5. **Renewals due in 30 days** list.
@@ -369,12 +373,12 @@ The discount and catalog screens are visible to Admin only. Staff never see the 
 
 This is a Zuora-style structure, with original content.
 
-1. **Hero:** `navy-950` background. An `eyebrow` reading "SUBSCRIPTION BILLING", a `display` headline ("Run every plan, renewal and invoice in one place") with one word in `accent-500`, a sub-headline, and two CTAs: Get started (on-dark) and Sign in (ghost, white).
+1. **Hero:** `ink` background. An `eyebrow` reading "Subscription billing", a `display` headline ("Run every plan, renewal and invoice in one place") with one word in `brand`, a sub-headline, and two CTAs: Get started (on-dark) and Sign in (ghost, white).
    - On the right, a tilted dashboard screenshot with a soft accent glow behind it.
-2. **Pain → fix strip:** five small cards built from the PDF's "How things run today" list. Each shows the old way struck through in `gray-400` and the new way in `gray-900`, for example ~~Renewals remembered by whoever notices~~ → Automatic renewals.
+2. **Pain → fix strip:** five small cards built from the PDF's "How things run today" list. Each shows the old way struck through in `subtle` and the new way in `ink`, for example ~~Renewals remembered by whoever notices~~ → Automatic renewals.
 3. **Feature grid:** six cards (Plans & variants, Quotes to subscriptions, Automated billing, Taxes & discounts, Payments tracking, Revenue dashboard), each with an icon, title and two-line description.
 4. **Stats band:** three oversized metrics on a white background, for example "0 missed renewals · 1-click billing runs · < 2s per page".
-5. **CTA band:** `navy-950` background with a headline and a primary button.
+5. **CTA band:** `ink` background with a headline and a primary button.
 6. **Footer:** a minimal four-column footer.
 
 ---
@@ -429,45 +433,49 @@ Hide navigation entries and action buttons the current role cannot use. Do not s
 
 ## 10. CSS token starter
 
+The Odoo module keeps these as SCSS variables in `static/src/scss/tokens.scss`; the prototype keeps them in `ui-prototype/assets/styles.css`.
+
 ```css
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap");
+
 :root {
   /* brand */
-  --color-navy-950: #0A1628;
-  --color-navy-900: #10213A;
-  --color-navy-800: #1B3155;
-  --color-primary-50: #EFF4FF;
-  --color-primary-600: #2563EB;
-  --color-primary-700: #1D4ED8;
-  --color-accent-500: #14C8A0;
+  --color-ink: #181D2A;
+  --color-ink-700: #2B3244;
+  --color-brand: #748EFE;
+  --color-brand-600: #5F7AF7;
+  --color-brand-700: #4A62E0;
+  --color-brand-50: #EEF1FF;
+  --color-orange: #E8490F;
 
   /* neutrals */
-  --color-gray-900: #0F172A;
-  --color-gray-600: #475569;
-  --color-gray-400: #94A3B8;
-  --color-gray-200: #E2E8F0;
-  --color-gray-100: #F1F5F9;
-  --color-gray-50:  #F8FAFC;
-  --color-white:    #FFFFFF;
+  --color-canvas: #E8EBED;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F3F4F6;
+  --color-line: #E3E6EA;
+  --color-muted: #697080;
+  --color-subtle: #9AA0AC;
 
   /* semantic */
-  --color-success: #047857;  --color-success-bg: #ECFDF5;
-  --color-warning: #B45309;  --color-warning-bg: #FFFBEB;
-  --color-danger:  #B91C1C;  --color-danger-bg:  #FEF2F2;
-  --color-info:    #1D4ED8;  --color-info-bg:    #EFF4FF;
-  --color-neutral: #475569;  --color-neutral-bg: #F1F5F9;
+  --color-success: #157F55;  --color-success-bg: #E8F7EF;
+  --color-warning: #A15C07;  --color-warning-bg: #FFF6E5;
+  --color-danger:  #C2410C;  --color-danger-bg:  #FFF1EA;
+  --color-info:    #4A62E0;  --color-info-bg:    #EEF1FF;
+  --color-neutral: #181D2A;  --color-neutral-bg: #E8EBED;
 
   /* type */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Google Sans", "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* shape */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-tag: 8px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
   --radius-full: 999px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, .08);
-  --shadow-lg: 0 16px 40px rgba(15, 23, 42, .16);
+  --shadow-sm: 0 1px 2px rgba(24, 29, 42, .04);
+  --shadow-md: 0 8px 24px rgba(24, 29, 42, .08);
+  --shadow-lg: 0 24px 48px rgba(24, 29, 42, .16);
 
   /* motion */
   --ease: cubic-bezier(.2, .8, .2, 1);
@@ -479,8 +487,9 @@ body {
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 24px;
-  color: var(--color-gray-900);
-  background: var(--color-gray-50);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
 }
 ```
 

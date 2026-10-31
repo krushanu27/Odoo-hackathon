@@ -78,8 +78,8 @@
                                         <p class="bl_muted">Collected vs. still outstanding, by invoice month</p>
                                     </div>
                                     <div class="bl_legend">
-                                        <span><i style="background:#14C8A0"/>Collected</span>
-                                        <span><i style="background:#2563EB"/>Outstanding</span>
+                                        <span><i style="background:#748EFE"/>Collected</span>
+                                        <span><i style="background:#C9CED6"/>Outstanding</span>
                                     </div>
                                 </div>
                                 <div class="bl_chart" role="img" t-att-aria-label="trendSummary">

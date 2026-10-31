@@ -36,7 +36,7 @@
       <section class="card" style="overflow:hidden">
         <div class="bulkbar" id="bulk" hidden>
           <strong id="selCount"></strong>
-          <span aria-hidden="true" style="width:1px;height:20px;background:#BFD3FB"></span>
+          <span aria-hidden="true" style="width:1px;height:20px;background:#DCE3FF"></span>
           <button type="button" class="btn btn-secondary btn-sm" data-bulk="Confirmed">Confirm</button>
           <button type="button" class="btn btn-secondary btn-sm" data-bulk="send">Send</button>
           <button type="button" class="btn btn-secondary btn-sm" data-bulk="print">Print</button>
@@ -75,7 +75,7 @@
       <div><dt>Subscriptions due today</dt><dd>142</dd></div>
       <div><dt style="display:flex;flex-direction:column"><span>Already invoiced for this period</span><span class="muted" style="font-size:12px">Skipped, so nothing is billed twice</span></dt><dd class="muted">0</dd></div>
       <div><dt style="display:flex;flex-direction:column"><span>Paused or closed</span><span class="muted" style="font-size:12px">Excluded until resumed</span></dt><dd class="muted">12</dd></div>
-      <div><dt style="display:flex;flex-direction:column"><span>Discounts applied automatically</span><span class="muted" style="font-size:12px">From 4 active discount rules</span></dt><dd style="color:#047857">31</dd></div>
+      <div><dt style="display:flex;flex-direction:column"><span>Discounts applied automatically</span><span class="muted" style="font-size:12px">From 4 active discount rules</span></dt><dd style="color:#157F55">31</dd></div>
     </dl>
     <div style="display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:24px">
       <button type="button" class="btn btn-ghost" id="cancelRun">Cancel</button>
@@ -118,7 +118,7 @@ function render() {
     return `<tr class="${sel ? 'selected' : ''}">
       <td><input type="checkbox" data-id="${r.id}" aria-label="Select ${r.id}"${sel ? ' checked' : ''}></td>
       <td class="id">${r.id}</td><td style="font-weight:500">${r.cust}</td><td class="mono muted">${r.sub}</td>
-      <td class="muted">${r.date}</td><td style="color:${r.status === 'Overdue' ? '#B91C1C' : '#475569'}">${r.due}</td>
+      <td class="muted">${r.date}</td><td style="color:${r.status === 'Overdue' ? '#C2410C' : '#697080'}">${r.due}</td>
       <td class="num">${r.total}</td><td class="num" style="font-weight:600">${r.amtDue}</td>
       <td><div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px"><span class="badge tone-${TONE[r.status]}">${r.status}</span><span class="muted" style="font-size:12px">${r.note}</span></div></td></tr>`;
   }).join('') : `<tr><td colspan="9" style="height:160px;text-align:center" class="muted">No invoices match these filters.</td></tr>`;

@@ -11,7 +11,7 @@
   <nav class="sidebar" id="sidebar" data-active="Subscriptions" data-role="staff"></nav>
   <div class="main-col">
     <header class="topbar" id="topbar" data-user="Priya Sharma" data-role="Staff" data-initials="PS"
-      data-crumb='<a href="#" style="color:#475569;text-decoration:none">Subscriptions</a><span aria-hidden="true" style="color:#475569">/</span><span class="mono" style="font-weight:500">SUB-000123</span>'></header>
+      data-crumb='<a href="#" style="color:#697080;text-decoration:none">Subscriptions</a><span aria-hidden="true" style="color:#697080">/</span><span class="mono" style="font-weight:500">SUB-000123</span>'></header>
     <main class="page">
       <div class="between" style="align-items:flex-start">
         <div style="display:flex;flex-direction:column;gap:6px">
@@ -51,7 +51,7 @@
             <div style="display:flex;justify-content:flex-end;padding:20px 24px 24px">
               <dl class="totals">
                 <div><dt class="muted">Untaxed amount</dt><dd>₹79,000.00</dd></div>
-                <div><dt style="display:flex;flex-direction:column"><span class="muted">Discount</span><span class="muted" style="font-size:12px">Volume 10% · 25+ seats</span></dt><dd style="color:#047857">− ₹7,900.00</dd></div>
+                <div><dt style="display:flex;flex-direction:column"><span class="muted">Discount</span><span class="muted" style="font-size:12px">Volume 10% · 25+ seats</span></dt><dd style="color:#157F55">− ₹7,900.00</dd></div>
                 <div><dt class="muted">GST 18%</dt><dd>₹12,798.00</dd></div>
                 <div class="grand"><dt>Total per month</dt><dd>₹83,898.00</dd></div>
               </dl>
@@ -92,14 +92,14 @@ document.getElementById('lines').innerHTML = lines.map(([p, v, q, u, a]) =>
 
 const options = [['Auto-close at end date', false], ['Can be closed early', true], ['Can be paused', true], ['Can be renewed', true]];
 document.getElementById('options').innerHTML = options.map(([n, ok]) =>
-  `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${n}</span><span style="font-size:13px;font-weight:500;color:${ok ? '#047857' : '#475569'}">${ok ? 'Allowed' : 'Off'}</span></div>`).join('');
+  `<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span>${n}</span><span style="font-size:13px;font-weight:500;color:${ok ? '#157F55' : '#697080'}">${ok ? 'Allowed' : 'Off'}</span></div>`).join('');
 
 const activity = [
-  ['Invoice INV-2026-0042 created by billing run', '6 Oct 2026 · 09:00', '#2563EB'],
-  ['Subscription activated by Priya Sharma', '6 Oct 2026 · 08:42', '#14C8A0'],
-  ['Quotation accepted by customer', '5 Oct 2026 · 16:10', '#2563EB'],
-  ['Quotation sent to ops@northwind.in', '3 Oct 2026 · 11:25', '#94A3B8'],
-  ['Created from template Enterprise starter (valid 30 days)', '1 Oct 2026 · 14:02', '#94A3B8']
+  ['Invoice INV-2026-0042 created by billing run', '6 Oct 2026 · 09:00', '#C9CED6'],
+  ['Subscription activated by Priya Sharma', '6 Oct 2026 · 08:42', '#748EFE'],
+  ['Quotation accepted by customer', '5 Oct 2026 · 16:10', '#C9CED6'],
+  ['Quotation sent to ops@northwind.in', '3 Oct 2026 · 11:25', '#9AA0AC'],
+  ['Created from template Enterprise starter (valid 30 days)', '1 Oct 2026 · 14:02', '#9AA0AC']
 ];
 const renderActivity = () => document.getElementById('activity').innerHTML = activity.map(([t, d, c]) =>
   `<li><div class="rail"><span style="background:${c}"></span><span></span></div><div class="body"><span>${t}</span><span class="muted" style="font-size:12px">${d}</span></div></li>`).join('');
@@ -113,7 +113,7 @@ document.querySelector('[data-act=pause]').addEventListener('click', (e) => {
   badge.textContent = paused ? 'Active' : 'Paused';
   badge.className = 'badge ' + (paused ? 'tone-success' : 'tone-warning');
   e.target.textContent = paused ? 'Pause' : 'Resume';
-  activity.unshift([paused ? 'Subscription resumed by Priya Sharma' : 'Subscription paused by Priya Sharma', '31 Oct 2026 · just now', paused ? '#14C8A0' : '#F59E0B']);
+  activity.unshift([paused ? 'Subscription resumed by Priya Sharma' : 'Subscription paused by Priya Sharma', '31 Oct 2026 · just now', paused ? '#748EFE' : '#F5A524']);
   renderActivity();
   toast.textContent = paused ? 'SUB-000123 resumed' : 'SUB-000123 paused. It will be skipped on billing day.';
   toast.hidden = false;

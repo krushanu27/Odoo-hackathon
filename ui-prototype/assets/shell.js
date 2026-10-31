@@ -30,7 +30,7 @@
   const icon = (name, size = 20) =>
     `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[name]}"></path></svg>`;
 
-  const LOGO = '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#14C8A0"></rect><circle cx="14" cy="14" r="6.5" fill="none" stroke="#0A1628" stroke-width="3"></circle><circle cx="14" cy="7.5" r="2.6" fill="#FFFFFF"></circle></svg>';
+  const LOGO = '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#748EFE"></rect><circle cx="14" cy="14" r="6.5" fill="none" stroke="#181D2A" stroke-width="3"></circle><circle cx="14" cy="7.5" r="2.6" fill="#FFFFFF"></circle></svg>';
 
   const sidebar = document.getElementById('sidebar');
   if (sidebar) {
