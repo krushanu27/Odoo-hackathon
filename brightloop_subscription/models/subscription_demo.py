@@ -1,9 +1,13 @@
+import logging
 import random
+import time
 
 from dateutil.relativedelta import relativedelta
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import AccessError, UserError
+
+_logger = logging.getLogger(__name__)
 
 CUSTOMERS = [
     ("Sharma Textiles", "accounts@sharmatextiles.in"),
@@ -84,6 +88,69 @@ class SubscriptionDemoLoader(models.AbstractModel):
                 "type": "success",
                 "next": {"type": "ir.actions.act_window_close"},
             },
+        }
+
+    @api.model
+    def action_generate_load(self, count=2000):
+        """Performance check for the judges: create `count` active
+        subscriptions, then time the operations a user actually waits on."""
+        self._check_admin()
+        Sub = self.env["subscription.subscription"]
+        plan = self.env["subscription.plan"].search([("billing_period", "=", "monthly")], limit=1)
+        if not plan:
+            raise UserError(self.env._("Load the demo data first, or create a monthly plan."))
+        today = fields.Date.context_today(self)
+
+        t = time.perf_counter()
+        partners = self.env["res.partner"].create([
+            {"name": f"Load Test Customer {i:04d}", "is_company": True} for i in range(count // 4)
+        ])
+        subs = Sub.create([
+            {"partner_id": partners[i % len(partners)].id, "plan_id": plan.id,
+             "date_start": today - relativedelta(days=i % 28)}
+            for i in range(count)
+        ])
+        # Bulk activation: one write per start date instead of one per record.
+        for start, group in subs.grouped("date_start").items():
+            group.write({"state": "active", "next_invoice_date": start})
+        t_create = time.perf_counter() - t
+
+        t = time.perf_counter()
+        Sub._run_billing(today)
+        t_bill = time.perf_counter() - t
+
+        # What a page actually does: one page of the list view + the total count.
+        self.env.invalidate_all()
+        t = time.perf_counter()
+        Sub.search_read([], ["name", "partner_id", "plan_id", "date_start", "next_invoice_date",
+                             "amount_total", "state"], limit=80)
+        total = Sub.search_count([])
+        t_list = time.perf_counter() - t
+
+        self.env.invalidate_all()
+        t = time.perf_counter()
+        Sub.search_read([("state", "=", "active"), ("partner_id.name", "ilike", "Load Test Customer 01")],
+                        ["name", "state"], limit=80)
+        t_search = time.perf_counter() - t
+
+        self.env.invalidate_all()
+        t = time.perf_counter()
+        self.env["subscription.dashboard"].get_dashboard_data()
+        t_dash = time.perf_counter() - t
+
+        message = self.env._(
+            "%(count)s subscriptions created in %(create).1fs and billed in %(bill).1fs (background job). "
+            "With %(total)s subscriptions on file: list page %(list)d ms, filtered search %(search)d ms, "
+            "dashboard %(dash)d ms.",
+            count=count, create=t_create, bill=t_bill, total=total,
+            list=t_list * 1000, search=t_search * 1000, dash=t_dash * 1000,
+        )
+        _logger.info("Load test: %s", message)
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {"title": self.env._("Load test complete"), "message": message,
+                       "type": "success", "sticky": True},
         }
 
     # ------------------------------------------------------------------

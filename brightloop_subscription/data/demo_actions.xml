@@ -7,10 +7,24 @@
         <field name="code">action = env["subscription.demo.loader"].action_load_demo()</field>
     </record>
 
+    <record id="action_generate_load" model="ir.actions.server">
+        <field name="name">Performance Test: 2,000 Subscriptions</field>
+        <field name="model_id" ref="model_subscription_subscription"/>
+        <field name="state">code</field>
+        <field name="code">action = env["subscription.demo.loader"].action_generate_load(2000)</field>
+    </record>
+
     <menuitem id="menu_subscription_load_demo"
               name="Load Demo Data"
               parent="menu_subscription_config"
               action="action_load_demo_data"
               sequence="90"
+              groups="group_subscription_admin"/>
+
+    <menuitem id="menu_subscription_load_test"
+              name="Performance Test (2,000 subscriptions)"
+              parent="menu_subscription_config"
+              action="action_generate_load"
+              sequence="95"
               groups="group_subscription_admin"/>
 </odoo>
