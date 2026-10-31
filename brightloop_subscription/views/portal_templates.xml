@@ -217,6 +217,36 @@
                     </tbody>
                 </t>
 
+                <!-- Add-ons the customer can switch on and off; the server re-checks everything. -->
+                <t t-if="addons">
+                    <h3 class="h5 fw-semibold mt-4">Add-ons</h3>
+                    <p class="text-muted small mb-2">Switch extras on or off. Changes apply from your next invoice.</p>
+                    <div class="row g-3">
+                        <div t-foreach="addons" t-as="addon" class="col-12 col-md-6 col-lg-4">
+                            <div t-attf-class="card h-100 #{'border-success' if addon['enabled'] else ''}">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <span class="fw-semibold" t-out="addon['name']"/>
+                                        <span t-if="addon['enabled']" class="badge rounded-pill text-bg-success">On</span>
+                                    </div>
+                                    <div class="text-muted small mt-1 flex-grow-1" t-out="addon['description']"/>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="fw-semibold">
+                                            <span t-out="addon['price']" t-options="{'widget': 'monetary', 'display_currency': sub.currency_id}"/>
+                                            <span class="text-muted small"> / <span t-field="sub.plan_id.billing_period"/></span>
+                                        </span>
+                                        <form t-attf-action="/my/subscriptions/#{sub.id}/addon/#{addon['id']}/#{'off' if addon['enabled'] else 'on'}" method="post">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <button t-if="addon['enabled']" type="submit" class="btn btn-sm btn-outline-secondary">Switch off</button>
+                                            <button t-else="" type="submit" class="btn btn-sm btn-primary">Switch on</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
                 <h3 class="h5 fw-semibold mt-4">Invoices</h3>
                 <div t-if="not invoices" class="alert alert-light border">No invoices yet for this subscription.</div>
                 <t t-else="" t-call="portal.portal_table">
