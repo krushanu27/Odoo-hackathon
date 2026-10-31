@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- "My Account" home: Subscriptions tile with a live counter. -->
+    <template id="portal_my_home_subscription" name="Show Subscriptions" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/brightloop_subscription/static/src/img/subscriptions.svg'"/>
+                <t t-set="title">Subscriptions</t>
+                <t t-set="url" t-value="'/my/subscriptions'"/>
+                <t t-set="text">See your plans, pause, renew or close them</t>
+                <t t-set="placeholder_count" t-value="'subscription_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- Status badge, shared by the list and the detail page. -->
+    <template id="portal_subscription_badge" name="Subscription Status Badge">
+        <t t-set="badge_class" t-value="{
+            'quotation': 'text-bg-info',
+            'confirmed': 'text-bg-primary',
+            'active': 'text-bg-success',
+            'paused': 'text-bg-warning',
+            'closed': 'text-bg-secondary',
+        }.get(sub.state, 'text-bg-light')"/>
+        <span t-attf-class="badge rounded-pill bl_portal_badge #{badge_class}" t-field="sub.state"/>
+    </template>
+
+    <!-- List of the customer's subscriptions. -->
+    <template id="portal_my_subscriptions" name="My Subscriptions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div class="bl_portal">
+                <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mt-4 mb-3">
+                    <div>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-1 small">
+                                <li class="breadcrumb-item"><a href="/my/home">My account</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Subscriptions</li>
+                            </ol>
+                        </nav>
+                        <h2 class="mb-0 fw-bold">My subscriptions</h2>
+                    </div>
+                    <div t-if="subscriptions" class="d-flex align-items-center gap-2 small">
+                        <span class="text-muted">Sort by</span>
+                        <div class="btn-group" role="group" aria-label="Sort subscriptions">
+                            <t t-foreach="searchbar_sortings.items()" t-as="option">
+                                <a t-attf-href="/my/subscriptions?sortby=#{option[0]}"
+                                   t-attf-class="btn btn-sm #{'btn-primary' if sortby == option[0] else 'btn-outline-secondary'}"
+                                   t-att-aria-current="'true' if sortby == option[0] else None"
+                                   t-out="option[1]['label']"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+                <div t-if="not subscriptions" class="alert alert-light border text-center py-5">
+                    <p class="mb-1 fw-semibold">You have no subscriptions yet.</p>
+                    <p class="mb-0 text-muted">When we send you a quotation it will appear here.</p>
+                </div>
+
+                <div t-else="" class="row g-3">
+                    <t t-foreach="subscriptions" t-as="sub">
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <a t-attf-href="/my/subscriptions/#{sub.id}" class="card h-100 bl_portal_card text-reset text-decoration-none">
+                                <div class="card-body d-flex flex-column gap-3">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <div>
+                                            <h3 class="h5 mb-0 fw-semibold" t-field="sub.plan_id.name"/>
+                                            <span class="small text-muted font-monospace" t-field="sub.name"/>
+                                        </div>
+                                        <t t-call="brightloop_subscription.portal_subscription_badge"/>
+                                    </div>
+                                    <div>
+                                        <span class="bl_portal_price" t-field="sub.amount_total"/>
+                                        <span class="text-muted text-lowercase"> / <span t-field="sub.plan_id.billing_period"/></span>
+                                    </div>
+                                    <div class="small text-muted mt-auto">
+                                        <t t-if="sub.state == 'active' and sub.next_invoice_date">
+                                            Next bill on <span t-field="sub.next_invoice_date"/>
+                                        </t>
+                                        <t t-elif="sub.state == 'paused'">Paused, not being billed</t>
+                                        <t t-elif="sub.state == 'quotation'">
+                                            Quotation<t t-if="sub.validity_date">, valid until <span t-field="sub.validity_date"/></t>
+                                        </t>
+                                        <t t-elif="sub.state == 'closed'">Closed</t>
+                                        <t t-else="">Starts on <span t-field="sub.date_start"/></t>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+
+                <div t-if="pager" class="o_portal_pager d-flex justify-content-center mt-4">
+                    <t t-call="portal.pager"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- One subscription: details, lines, invoices and permitted actions. -->
+    <template id="portal_my_subscription" name="My Subscription">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <t t-set="sub" t-value="subscription"/>
+            <div class="bl_portal mt-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2 small">
+                        <li class="breadcrumb-item"><a href="/my/home">My account</a></li>
+                        <li class="breadcrumb-item"><a href="/my/subscriptions">Subscriptions</a></li>
+                        <li class="breadcrumb-item active font-monospace" aria-current="page" t-out="sub.name"/>
+                    </ol>
+                </nav>
+
+                <div t-if="message" class="alert alert-success" role="status" t-out="message"/>
+                <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h2 class="mb-0 fw-bold" t-field="sub.plan_id.name"/>
+                            <t t-call="brightloop_subscription.portal_subscription_badge"/>
+                        </div>
+                        <span class="text-muted font-monospace" t-field="sub.name"/>
+                    </div>
+
+                    <!-- Only actions the state and plan allow; the server re-checks both. -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <form t-if="sub.state == 'active' and sub.plan_allow_pause"
+                              t-attf-action="/my/subscriptions/#{sub.id}/pause" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="btn btn-outline-secondary">Pause</button>
+                        </form>
+                        <form t-if="sub.state == 'paused'"
+                              t-attf-action="/my/subscriptions/#{sub.id}/resume" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="btn btn-primary">Resume</button>
+                        </form>
+                        <form t-if="sub.state in ('active', 'closed') and sub.plan_allow_renew and sub.date_end"
+                              t-attf-action="/my/subscriptions/#{sub.id}/renew" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="btn btn-outline-primary">Renew</button>
+                        </form>
+                        <button t-if="sub.state in ('active', 'paused') and sub.plan_allow_close"
+                                type="button" class="btn btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#bl_close_modal">Close</button>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="bl_portal_label">Amount per period</div>
+                            <div class="bl_portal_price" t-field="sub.amount_total"/>
+                            <div class="small text-muted">incl. taxes, before discounts</div>
+                        </div></div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="bl_portal_label">Billing</div>
+                            <div class="fs-5 fw-semibold text-capitalize" t-field="sub.plan_id.billing_period"/>
+                        </div></div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="bl_portal_label">Next invoice</div>
+                            <div class="fs-5 fw-semibold">
+                                <span t-if="sub.state == 'active' and sub.next_invoice_date" t-field="sub.next_invoice_date"/>
+                                <span t-else="" class="text-muted">—</span>
+                            </div>
+                        </div></div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="bl_portal_label">Period</div>
+                            <div class="fw-semibold">
+                                <span t-field="sub.date_start"/>
+                                <t t-if="sub.date_end"> to <span t-field="sub.date_end"/></t>
+                            </div>
+                        </div></div>
+                    </div>
+                </div>
+
+                <h3 class="h5 fw-semibold">What you are subscribed to</h3>
+                <t t-call="portal.portal_table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-end">Quantity</th>
+                            <th class="text-end">Unit price</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="sub.line_ids" t-as="line">
+                            <td t-out="line.name"/>
+                            <td class="text-end" t-out="line.quantity"/>
+                            <td class="text-end" t-out="line.price_unit"
+                                t-options="{'widget': 'monetary', 'display_currency': sub.currency_id}"/>
+                            <td class="text-end" t-field="line.price_subtotal"/>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end text-muted">Untaxed</td>
+                            <td class="text-end" t-field="sub.amount_untaxed"/>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end text-muted">Taxes</td>
+                            <td class="text-end" t-field="sub.amount_tax"/>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">Total</td>
+                            <td class="text-end fw-bold" t-field="sub.amount_total"/>
+                        </tr>
+                    </tbody>
+                </t>
+
+                <h3 class="h5 fw-semibold mt-4">Invoices</h3>
+                <div t-if="not invoices" class="alert alert-light border">No invoices yet for this subscription.</div>
+                <t t-else="" t-call="portal.portal_table">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Date</th>
+                            <th>Due</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Amount due</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="invoices" t-as="inv">
+                            <td><a t-att-href="inv.get_portal_url()" class="font-monospace" t-out="inv.name"/></td>
+                            <td t-field="inv.invoice_date"/>
+                            <td t-field="inv.invoice_date_due"/>
+                            <td class="text-end" t-field="inv.amount_total"/>
+                            <td class="text-end fw-semibold" t-field="inv.amount_residual"/>
+                            <td>
+                                <span t-if="inv.payment_state in ('paid', 'in_payment')" class="badge rounded-pill text-bg-success">Paid</span>
+                                <span t-elif="inv.invoice_date_due and inv.invoice_date_due &lt; today" class="badge rounded-pill text-bg-danger">Overdue</span>
+                                <span t-elif="inv.payment_state == 'partial'" class="badge rounded-pill text-bg-warning">Partially paid</span>
+                                <span t-else="" class="badge rounded-pill text-bg-info">Due</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+
+                <!-- Close confirmation -->
+                <div t-if="sub.state in ('active', 'paused') and sub.plan_allow_close"
+                     class="modal fade" id="bl_close_modal" tabindex="-1" aria-labelledby="bl_close_title" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form class="modal-content" t-attf-action="/my/subscriptions/#{sub.id}/close" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="bl_close_title">Close <t t-out="sub.name"/>?</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"/>
+                            </div>
+                            <div class="modal-body">
+                                Billing stops and the subscription cannot be resumed. Invoices already issued still need to be paid.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Keep subscription</button>
+                                <button type="submit" class="btn btn-danger">Close subscription</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

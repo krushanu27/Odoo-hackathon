@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Show the password policy under the password field on signup and reset.
+        The rules mirror PASSWORD_RULES in models/res_users.py, which is what
+        actually enforces them; static/src/signup/password_rules.js ticks them
+        off as the user types.
+    -->
+    <template id="auth_signup_fields_password_rules" inherit_id="auth_signup.fields" name="Brightloop Password Rules">
+        <xpath expr="//input[@name='password']" position="after">
+            <ul class="bl_password_rules list-unstyled" id="bl_password_rules" aria-live="polite">
+                <li data-rule="length">More than 8 characters</li>
+                <li data-rule="upper">An uppercase letter</li>
+                <li data-rule="lower">A lowercase letter</li>
+                <li data-rule="special">A special character</li>
+            </ul>
+        </xpath>
+    </template>
+</odoo>
