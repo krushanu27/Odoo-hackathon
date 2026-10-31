@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Customers create their own accounts (problem statement: "creates an account
+         with their email and a password"); Odoo's default is invitation only. -->
+    <function model="ir.config_parameter" name="set_param" eval="('auth_signup.invitation_scope', 'b2c')"/>
+    <!-- "If they forget it later, a reset link should arrive at their registered email." -->
+    <function model="ir.config_parameter" name="set_param" eval="('auth_signup.reset_password', 'True')"/>
+    <!-- Flag the demo add-on products in databases that already have demo data. -->
+    <function model="subscription.demo.loader" name="_mark_default_addons"/>
+</odoo>

@@ -6,4 +6,5 @@ from . import subscription_discount
 from . import subscription_dashboard
 from . import subscription_demo
 from . import account_move
+from . import product
 from . import res_users

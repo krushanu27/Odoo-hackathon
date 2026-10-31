@@ -171,6 +171,15 @@ class SubscriptionDemoLoader(models.AbstractModel):
                        "type": "success", "sticky": True},
         }
 
+    DEFAULT_ADDONS = ("Analytics Add-on", "Extra Storage 100 GB", "Priority Support")
+
+    @api.model
+    def _mark_default_addons(self):
+        """Run on install/upgrade: flag the demo add-on products if they exist."""
+        self.env["product.template"].sudo().search([
+            ("name", "in", self.DEFAULT_ADDONS), ("subscription_addon", "=", False),
+        ]).write({"subscription_addon": True})
+
     # ------------------------------------------------------------------
     def _get_gst(self):
         Tax = self.env["account.tax"]
@@ -202,6 +211,7 @@ class SubscriptionDemoLoader(models.AbstractModel):
             return Tmpl.create({
                 "name": name, "type": "service", "list_price": price, "standard_price": cost,
                 "taxes_id": [Command.set(tax.ids)], "description": note,
+                "subscription_addon": True,
             }).product_variant_id
 
         return {

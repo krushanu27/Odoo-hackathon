@@ -320,6 +320,63 @@ class Subscription(models.Model):
         getattr(self.sudo(), f"action_{action}")()
         return True
 
+    # ------------------------------------------------------------------------
+    # Add-ons customers switch on and off (portal)
+    # ------------------------------------------------------------------------
+    ADDON_STATES = ("confirmed", "active", "paused")
+
+    def _addon_products(self):
+        return self.env["product.product"].sudo().search([
+            ("product_tmpl_id.subscription_addon", "=", True),
+            ("company_id", "in", (False, self.company_id.id)),
+        ])
+
+    def _portal_available_addons(self):
+        """Add-ons the customer can switch on or off for this subscription, as
+        plain values the portal can render (customers cannot read products)."""
+        self.ensure_one()
+        self.check_access("read")
+        enabled = self.sudo().line_ids.filtered(lambda l: not l.is_plan_line).product_id
+        return [
+            {
+                "id": product.id,
+                "name": product.display_name,
+                "description": product.description_sale or product.description or "",
+                "price": product.lst_price,
+                "enabled": product in enabled,
+            }
+            for product in self._addon_products()
+        ]
+
+    def action_portal_set_addon(self, product_id, enabled):
+        """Switch an add-on on (one unit at list price) or off. The change is
+        billed from the next invoice. Same pattern as action_portal_request:
+        prove read access, validate, then act with elevated rights."""
+        self.ensure_one()
+        self.check_access("read")
+        if self.state not in self.ADDON_STATES:
+            raise UserError(self.env._("Add-ons can only be changed on a running subscription."))
+        product = self.env["product.product"].sudo().browse(int(product_id)).exists()
+        if not product or product not in self._addon_products():
+            raise AccessError(self.env._("That product is not an available add-on."))
+        sub = self.sudo()
+        lines = sub.line_ids.filtered(lambda l: l.product_id == product and not l.is_plan_line)
+        if enabled and not lines:
+            self.env["subscription.line"].sudo().create({
+                "subscription_id": sub.id,
+                "product_id": product.id,
+                "name": product.display_name,
+                "quantity": 1.0,
+                "price_unit": product.lst_price,
+                "tax_ids": [Command.set(product.taxes_id.filtered(
+                    lambda t: t.company_id == sub.company_id).ids)],
+            })
+            sub.message_post(body=self.env._("Add-on switched on: %s", product.display_name))
+        elif not enabled and lines:
+            lines.unlink()
+            sub.message_post(body=self.env._("Add-on switched off: %s", product.display_name))
+        return True
+
     def action_view_invoices(self):
         self.ensure_one()
         return {

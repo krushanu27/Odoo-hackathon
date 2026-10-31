@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Added by Person A with the add-on feature; Person B owns polish. -->
+    <record id="product_template_form_addon" model="ir.ui.view">
+        <field name="name">product.template.form.subscription.addon</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="subscription_addon"/>
+            </field>
+        </field>
+    </record>
+</odoo>

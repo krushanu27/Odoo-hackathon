@@ -9,9 +9,9 @@
         - Customer: Odoo's native Portal user (base.group_portal).
           Record rules will restrict them to their own data.
 
-        "Only the admin can add staff" is enforced natively: creating users
-        requires Odoo's Settings / Access Rights group, which we never grant
-        to Staff.
+        "Only the admin can add staff": creating users requires Odoo's
+        Access Rights group (base.group_erp_manager). Admin implies it;
+        Staff never gets it.
     -->
     <record id="group_subscription_staff" model="res.groups">
         <field name="name">Subscription Staff</field>
@@ -27,6 +27,7 @@
             Command.link(ref('group_subscription_staff')),
             Command.link(ref('account.group_account_manager')),
             Command.link(ref('product.group_product_variant')),
+            Command.link(ref('base.group_erp_manager')),
         ]"/>
     </record>
 </odoo>
